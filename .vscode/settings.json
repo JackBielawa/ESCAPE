@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "ESCAPE_GAME.sln"
+    "dotnet.defaultSolution": "ESCAPE.sln"
 }
