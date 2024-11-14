@@ -2,18 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Platformer camera script
-/// Author: Indie Marc (Marc-Antoine Desbiens)
-/// </summary>
-
 namespace IndieMarc.Platformer
 {
-
     public class FollowCamera : MonoBehaviour
     {
         [Header("Camera Target")]
-        public GameObject target;
+        public GameObject playerOne;
+        public GameObject playerTwo;
         public Vector3 target_offset;
         public float camera_speed = 5f;
 
@@ -22,7 +17,6 @@ namespace IndieMarc.Platformer
         public float level_left;
         public float level_right;
 
-        private PlayerCharacterOne target_character;
         private Camera cam;
         private Vector3 cur_pos;
         private GameObject lock_target = null;
@@ -41,33 +35,30 @@ namespace IndieMarc.Platformer
 
         void LateUpdate()
         {
-            GameObject cam_target = target;
+            if (playerOne == null || playerTwo == null)
+                return;
 
-            if (lock_target != null)
-                cam_target = lock_target;
+            // Calculate the midpoint between the two players
+            Vector3 midpoint = (playerOne.transform.position + playerTwo.transform.position) / 2 + target_offset;
 
-            if (cam_target != null)
+            // Set level limits
+            float fh = GetFrustrumHeight() / 2f;
+            float fw = GetFrustrumWidth() / 2f;
+            midpoint.x = Mathf.Clamp(midpoint.x, level_left + fw, level_right - fw);
+            midpoint.y = Mathf.Max(level_bottom + fh, midpoint.y);
+
+            // Move the camera smoothly towards the midpoint
+            Vector3 diff = midpoint - transform.position;
+            if (diff.magnitude > 0.1f)
             {
-                //Find target
-                Vector3 target_pos = cam_target.transform.position + target_offset;
-
-                //Set level limits
-                float fh = GetFrustrumHeight() / 2f;
-                float fw = GetFrustrumWidth() / 2f;
-                target_pos.x = Mathf.Max(level_left + fw, target_pos.x);
-                target_pos.x = Mathf.Min(level_right - fw, target_pos.x);
-                target_pos.y = Mathf.Max(level_bottom + fh, target_pos.y);
-
-                //Check if need to move
-                Vector3 diff = target_pos - transform.position;
-                if (diff.magnitude > 0.1f)
-                {
-                    //Move camera
-                    transform.position = Vector3.SmoothDamp(transform.position, target_pos, ref cur_pos, 1f / camera_speed, Mathf.Infinity, Time.deltaTime);
-                }
+                transform.position = Vector3.SmoothDamp(transform.position, midpoint, ref cur_pos, 1f / camera_speed, Mathf.Infinity, Time.deltaTime);
             }
 
-            //Shake FX
+            // Adjust camera zoom based on the distance between the players
+            float playerDistance = Vector3.Distance(playerOne.transform.position, playerTwo.transform.position);
+            cam.orthographicSize = Mathf.Lerp(cam.orthographicSize, Mathf.Max(5f, playerDistance / 2f), Time.deltaTime * camera_speed);
+
+            // Shake effect
             if (shake_timer > 0f)
             {
                 shake_timer -= Time.deltaTime;
@@ -117,5 +108,4 @@ namespace IndieMarc.Platformer
             return null;
         }
     }
-
 }

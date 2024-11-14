@@ -15,7 +15,7 @@ namespace IndieMarc.Platformer
         public int player_id;
         public KeyCode left_key;
         public KeyCode right_key;
-        public KeyCode up_key = KeyCode.UpArrow;
+        public KeyCode up_key;
         public KeyCode down_key;
         public KeyCode jump_key;
         public KeyCode action_key;
