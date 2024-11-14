@@ -10,12 +10,12 @@ using UnityEngine;
 namespace IndieMarc.Platformer
 {
 
-    public class PlayerControls : MonoBehaviour
+    public class PlayerControlsOne : MonoBehaviour
     {
         public int player_id;
         public KeyCode left_key;
         public KeyCode right_key;
-        public KeyCode up_key;
+        public KeyCode up_key = KeyCode.UpArrow;
         public KeyCode down_key;
         public KeyCode jump_key;
         public KeyCode action_key;
@@ -26,7 +26,7 @@ namespace IndieMarc.Platformer
         private bool action_press = false;
         private bool action_hold = false;
 
-        private static Dictionary<int, PlayerControls> controls = new Dictionary<int, PlayerControls>();
+        private static Dictionary<int, PlayerControlsOne> controls = new Dictionary<int, PlayerControlsOne>();
 
         void Awake()
         {
@@ -97,9 +97,9 @@ namespace IndieMarc.Platformer
 
         //-----------
 
-        public static PlayerControls Get(int player_id)
+        public static PlayerControlsOne Get(int player_id)
         {
-            foreach (PlayerControls control in GetAll())
+            foreach (PlayerControlsOne control in GetAll())
             {
                 if (control.player_id == player_id)
                 {
@@ -109,9 +109,9 @@ namespace IndieMarc.Platformer
             return null;
         }
 
-        public static PlayerControls[] GetAll()
+        public static PlayerControlsOne[] GetAll()
         {
-            PlayerControls[] list = new PlayerControls[controls.Count];
+            PlayerControlsOne[] list = new PlayerControlsOne[controls.Count];
             controls.Values.CopyTo(list, 0);
             return list;
         }

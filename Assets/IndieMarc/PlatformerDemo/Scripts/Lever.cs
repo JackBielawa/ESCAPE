@@ -71,7 +71,7 @@ namespace IndieMarc.Platformer
 
         void OnTriggerEnter2D(Collider2D coll)
         {
-            if (coll.gameObject.GetComponent<PlayerCharacter>())
+            if (coll.gameObject.GetComponent<PlayerCharacterOne>())
             {
                 if (state == LeverState.disabled)
                     return;

@@ -12,9 +12,9 @@ namespace IndieMarc.Platformer
 {
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(CapsuleCollider2D))]
-    public class PlayerCharacter : MonoBehaviour
+    public class PlayerCharacterOne : MonoBehaviour
     {
-        public int player_id;
+        public int player_id = 1;
 
         [Header("Stats")]
         public float max_hp = 100f;
@@ -82,7 +82,7 @@ namespace IndieMarc.Platformer
         private float jump_timer = 0f;
         private float hit_timer = 0f;
 
-        private static Dictionary<int, PlayerCharacter> character_list = new Dictionary<int, PlayerCharacter>();
+        private static Dictionary<int, PlayerCharacterOne> character_list = new Dictionary<int, PlayerCharacterOne>();
 
         void Awake()
         {
@@ -130,7 +130,8 @@ namespace IndieMarc.Platformer
             UpdateCrouch();
 
             //Move
-            rigid.velocity = move;
+            rigid.velocity = new Vector2(move.x, move.y);
+            
         }
 
         //Handle render and controls
@@ -142,16 +143,20 @@ namespace IndieMarc.Platformer
             hit_timer += Time.deltaTime;
             grounded_timer += Time.deltaTime;
 
-            //Controls
-            PlayerControls controls = PlayerControls.Get(player_id);
+            // Controls
+            PlayerControlsOne controls = PlayerControlsOne.Get(player_id);
             move_input = !disable_controls ? controls.GetMove() : Vector2.zero;
             jump_press = !disable_controls ? controls.GetJumpDown() : false;
             jump_hold = !disable_controls ? controls.GetJumpHold() : false;
 
+            // Debug log to check if jump is detected
             if (jump_press || move_input.y > 0.5f)
+            {
+                Debug.Log("Jump detected"); // Debugging line
                 Jump();
+            }
 
-            //Reset when fall
+            // Reset when fall
             if (transform.position.y < fall_pos_y - GetSize().y)
             {
                 TakeDamage(max_hp * fall_damage_percent);
@@ -159,6 +164,7 @@ namespace IndieMarc.Platformer
                     Teleport(last_ground_pos);
             }
         }
+
 
         private void UpdateFacing()
         {
@@ -405,11 +411,11 @@ namespace IndieMarc.Platformer
             
         }
 
-        public static PlayerCharacter GetNearest(Vector3 pos, float range = 99999f, bool alive_only=false)
+        public static PlayerCharacterOne GetNearest(Vector3 pos, float range = 99999f, bool alive_only=false)
         {
-            PlayerCharacter nearest = null;
+            PlayerCharacterOne nearest = null;
             float min_dist = range;
-            foreach (PlayerCharacter character in GetAll())
+            foreach (PlayerCharacterOne character in GetAll())
             {
                 if (!alive_only || !character.IsDead())
                 {
@@ -424,9 +430,9 @@ namespace IndieMarc.Platformer
             return nearest;
         }
 
-        public static PlayerCharacter Get(int player_id)
+        public static PlayerCharacterOne Get(int player_id)
         {
-            foreach (PlayerCharacter character in GetAll())
+            foreach (PlayerCharacterOne character in GetAll())
             {
                 if (character.player_id == player_id)
                 {
@@ -436,9 +442,9 @@ namespace IndieMarc.Platformer
             return null;
         }
 
-        public static PlayerCharacter[] GetAll()
+        public static PlayerCharacterOne[] GetAll()
         {
-            PlayerCharacter[] list = new PlayerCharacter[character_list.Count];
+            PlayerCharacterOne[] list = new PlayerCharacterOne[character_list.Count];
             character_list.Values.CopyTo(list, 0);
             return list;
         }
