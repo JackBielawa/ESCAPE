@@ -14,7 +14,7 @@ namespace IndieMarc.Platformer
     [RequireComponent(typeof(CapsuleCollider2D))]
     public class PlayerCharacterOne : MonoBehaviour
     {
-        public int player_id = 1;
+        public int player_id;
 
         [Header("Stats")]
         public float max_hp = 100f;
@@ -130,8 +130,7 @@ namespace IndieMarc.Platformer
             UpdateCrouch();
 
             //Move
-            rigid.velocity = new Vector2(move.x, move.y);
-            
+            rigid.velocity = move;
         }
 
         //Handle render and controls
@@ -143,20 +142,16 @@ namespace IndieMarc.Platformer
             hit_timer += Time.deltaTime;
             grounded_timer += Time.deltaTime;
 
-            // Controls
+            //Controls
             PlayerControlsOne controls = PlayerControlsOne.Get(player_id);
             move_input = !disable_controls ? controls.GetMove() : Vector2.zero;
             jump_press = !disable_controls ? controls.GetJumpDown() : false;
             jump_hold = !disable_controls ? controls.GetJumpHold() : false;
 
-            // Debug log to check if jump is detected
             if (jump_press || move_input.y > 0.5f)
-            {
-                Debug.Log("Jump detected"); // Debugging line
                 Jump();
-            }
 
-            // Reset when fall
+            //Reset when fall
             if (transform.position.y < fall_pos_y - GetSize().y)
             {
                 TakeDamage(max_hp * fall_damage_percent);
@@ -164,7 +159,6 @@ namespace IndieMarc.Platformer
                     Teleport(last_ground_pos);
             }
         }
-
 
         private void UpdateFacing()
         {
@@ -432,7 +426,7 @@ namespace IndieMarc.Platformer
 
         public static PlayerCharacterOne Get(int player_id)
         {
-            foreach (PlayerCharacterOne character in GetAll())
+            foreach (PlayerCharacter character in GetAll())
             {
                 if (character.player_id == player_id)
                 {

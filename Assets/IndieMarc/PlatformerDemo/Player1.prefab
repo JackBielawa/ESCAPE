@@ -13,8 +13,12 @@ GameObject:
   - component: {fileID: 95502617506151546}
   - component: {fileID: 50271368488489786}
   - component: {fileID: 70072209468978094}
+  - component: {fileID: 2646769819067367746}
+  - component: {fileID: 957435853132674950}
+  - component: {fileID: 8424847106262857662}
+  - component: {fileID: -5653544114949017384}
   m_Layer: 0
-  m_Name: CharacterPlatformer
+  m_Name: Player1
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -171,6 +175,85 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0}
   m_Size: {x: 0.4, y: 1.3}
   m_Direction: 0
+--- !u!114 &2646769819067367746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1262357808126890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 792237b3c87ee6b4c90a74cd87026a89, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player_id: 1
+  max_hp: 100
+  invulnerable: 0
+  move_accel: 1
+  move_deccel: 1
+  move_max: 1
+  can_jump: 1
+  double_jump: 1
+  jump_strength: 1
+  jump_time_min: 1
+  jump_time_max: 1
+  jump_gravity: 1
+  jump_fall_gravity: 1
+  jump_move_percent: 0.75
+  ground_layer:
+    serializedVersion: 2
+    m_Bits: 0
+  ground_raycast_dist: 0.1
+  can_crouch: 1
+  crouch_coll_percent: 0.5
+  reset_when_fall: 1
+  fall_pos_y: -5
+  fall_damage_percent: 0.25
+--- !u!114 &957435853132674950
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1262357808126890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec80819f2b286fd4a94401058273799d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player_id: 0
+  left_key: 0
+  right_key: 0
+  up_key: 0
+  down_key: 0
+  jump_key: 0
+  action_key: 0
+--- !u!114 &8424847106262857662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1262357808126890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 854ab241cb96bcc44b8e766dd629ebf9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hand: {fileID: 0}
+--- !u!114 &-5653544114949017384
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1262357808126890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5421e96f16710b4f81fe0ad10b67abf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1872324591488810
 GameObject:
   m_ObjectHideFlags: 0
