@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -38,6 +39,12 @@ namespace IndieMarc.Platformer
         private float over_obstacle_count = 0f;
         private bool throwing = false;
         private CharacterHoldItem last_bearer;
+
+        internal void Take(CharacterHoldItemTwo characterHoldItemTwo)
+        {
+            throw new NotImplementedException();
+        }
+
         private float destroy_timer = 0f;
         private float take_timer = 0f;
         private float flipX = 1f;
