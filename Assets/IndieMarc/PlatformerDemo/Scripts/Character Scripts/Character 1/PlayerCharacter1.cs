@@ -426,7 +426,7 @@ namespace IndieMarc.Platformer
 
         public static PlayerCharacterOne Get(int player_id)
         {
-            foreach (PlayerCharacter character in GetAll())
+            foreach (PlayerCharacterOne character in GetAll())
             {
                 if (character.player_id == player_id)
                 {
