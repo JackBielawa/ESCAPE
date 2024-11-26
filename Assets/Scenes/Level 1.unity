@@ -253,9 +253,9 @@ GameObject:
   - component: {fileID: 957967201}
   - component: {fileID: 957967200}
   - component: {fileID: 957967202}
-  m_Layer: 8
+  m_Layer: 31
   m_Name: Grid
-  m_TagString: Player
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -548,7 +548,7 @@ GameObject:
   - component: {fileID: 1108590162}
   - component: {fileID: 1108590161}
   - component: {fileID: 1108590160}
-  m_Layer: 8
+  m_Layer: 31
   m_Name: Tilemap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2008,13 +2008,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player1
       objectReference: {fileID: 0}
+    - target: {fileID: 1262357808126890, guid: 9131592fe8b644d658442d1c6589cea7, type: 3}
+      propertyPath: m_Layer
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 1872324591488810, guid: 9131592fe8b644d658442d1c6589cea7, type: 3}
+      propertyPath: m_Layer
+      value: 13
+      objectReference: {fileID: 0}
     - target: {fileID: 4024761065458598, guid: 9131592fe8b644d658442d1c6589cea7, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5.756604
       objectReference: {fileID: 0}
     - target: {fileID: 4024761065458598, guid: 9131592fe8b644d658442d1c6589cea7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.2033033
+      value: -4.66
       objectReference: {fileID: 0}
     - target: {fileID: 4024761065458598, guid: 9131592fe8b644d658442d1c6589cea7, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2060,8 +2068,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 70072209468978094, guid: 9131592fe8b644d658442d1c6589cea7,
         type: 3}
+      propertyPath: m_Direction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 70072209468978094, guid: 9131592fe8b644d658442d1c6589cea7,
+        type: 3}
       propertyPath: m_IsTrigger
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 70072209468978094, guid: 9131592fe8b644d658442d1c6589cea7,
+        type: 3}
+      propertyPath: m_IncludeLayers.m_Bits
+      value: 4294967295
       objectReference: {fileID: 0}
     - target: {fileID: 957435853132674950, guid: 9131592fe8b644d658442d1c6589cea7,
         type: 3}
@@ -2115,13 +2133,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player2
       objectReference: {fileID: 0}
+    - target: {fileID: 1262357808126890, guid: 488fef3a70db04a7d975594f7ab7ce56, type: 3}
+      propertyPath: m_Layer
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 1872324591488810, guid: 488fef3a70db04a7d975594f7ab7ce56, type: 3}
+      propertyPath: m_Layer
+      value: 13
+      objectReference: {fileID: 0}
     - target: {fileID: 4024761065458598, guid: 488fef3a70db04a7d975594f7ab7ce56, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.0764475
       objectReference: {fileID: 0}
     - target: {fileID: 4024761065458598, guid: 488fef3a70db04a7d975594f7ab7ce56, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.16
+      value: -4.65
       objectReference: {fileID: 0}
     - target: {fileID: 4024761065458598, guid: 488fef3a70db04a7d975594f7ab7ce56, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2167,8 +2193,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 70072209468978094, guid: 488fef3a70db04a7d975594f7ab7ce56,
         type: 3}
+      propertyPath: m_Direction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 70072209468978094, guid: 488fef3a70db04a7d975594f7ab7ce56,
+        type: 3}
       propertyPath: m_IsTrigger
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 70072209468978094, guid: 488fef3a70db04a7d975594f7ab7ce56,
+        type: 3}
+      propertyPath: m_IncludeLayers.m_Bits
+      value: 2147483648
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
