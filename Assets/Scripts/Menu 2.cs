@@ -7,7 +7,7 @@ public class Menu : MonoBehaviour
     public void OnPlayButton()
     {
         Debug.Log("Play button clicked. Loading the next scene...");
-        SceneManager.LoadScene(1); // Assumes scene index 1 is the next scene
+        SceneManager.LoadScene(1); // Loads Level Menu
     }
 
     // Called when the Quit button is clicked
