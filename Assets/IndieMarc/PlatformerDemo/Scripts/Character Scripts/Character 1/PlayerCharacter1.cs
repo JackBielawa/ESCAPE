@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Platformer character movement
@@ -14,6 +15,7 @@ namespace IndieMarc.Platformer
     [RequireComponent(typeof(CapsuleCollider2D))]
     public class PlayerCharacterOne : MonoBehaviour
     {
+        public int dragon1Count;
         public int player_id;
 
         [Header("Stats")]
@@ -441,6 +443,28 @@ namespace IndieMarc.Platformer
             PlayerCharacterOne[] list = new PlayerCharacterOne[character_list.Count];
             character_list.Values.CopyTo(list, 0);
             return list;
+        }
+
+        void OnTriggerEnter2D(Collider2D other)
+        {
+            if(other.gameObject.CompareTag("Dragon")){
+                //Destroy(other.gameObject);
+                dragon1Count++;
+                PlayerPrefs.SetInt("dragon1Count", dragon1Count);
+                PlayerPrefs.Save();
+                StartCoroutine(WaitAndLoadScene());
+            }
+        }
+
+                // Coroutine that introduces a delay before loading the scene
+        IEnumerator WaitAndLoadScene()
+        {
+            Debug.Log("Waiting for 1 second...");
+
+            yield return new WaitForSeconds(1);  // Wait for 1 second
+
+            SceneManager.LoadScene(1);
+
         }
     }
 
