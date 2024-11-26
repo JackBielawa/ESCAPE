@@ -5,6 +5,7 @@ using UnityEngine.Events;
 
 namespace IndieMarc.Platformer
 {
+
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(CapsuleCollider2D))]
     public class PlayerCharacterTwo : MonoBehaviour

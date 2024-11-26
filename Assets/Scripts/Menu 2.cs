@@ -1,18 +1,19 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class Menu : MonoBehaviour
 {
-    public void OnPlayButton ()
+    // Called when the Play button is clicked
+    public void OnPlayButton()
     {
-        SceneManager.LoadScene(1);
+        Debug.Log("Play button clicked. Loading the next scene...");
+        SceneManager.LoadScene(1); // Assumes scene index 1 is the next scene
     }
 
-    public void OnQuitButton ()
+    // Called when the Quit button is clicked
+    public void OnQuitButton()
     {
-        Application.Quit();
+        Debug.Log("Quit button clicked. Exiting the application...");
+        Application.Quit(); // Exits the game when built
     }
 }
-
