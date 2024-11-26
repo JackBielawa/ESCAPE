@@ -11,7 +11,7 @@ using UnityEngine.Events;
 namespace IndieMarc.Platformer
 {
     [RequireComponent(typeof(Rigidbody2D))]
-    [RequireComponent(typeof(CapsuleCollider2D))]
+    [RequireComponent(typeof(BoxCollider2D))]
     public class PlayerCharacterOne : MonoBehaviour
     {
         public int player_id;
@@ -30,12 +30,11 @@ namespace IndieMarc.Platformer
         [Header("Jump")]
         public bool can_jump = true;
         public bool double_jump = true;
-        //public bool jump_on_enemies = true;
         public float jump_strength = 1f;
-        public float jump_time_min = 1f;
-        public float jump_time_max = 1f;
+        public float jump_time_min = 0.1f;
+        public float jump_time_max = 0.5f;
         public float jump_gravity = 1f;
-        public float jump_fall_gravity = 1f;
+        public float jump_fall_gravity = 2f;
         public float jump_move_percent = 0.75f;
         public LayerMask ground_layer;
         public float ground_raycast_dist = 0.1f;
@@ -56,10 +55,9 @@ namespace IndieMarc.Platformer
         public UnityAction onCrouch;
 
         private Rigidbody2D rigid;
-        private CapsuleCollider2D capsule_coll;
-        private ContactFilter2D contact_filter;
-        private Vector2 coll_start_h;
-        private Vector2 coll_start_off;
+        private BoxCollider2D box_coll;
+        private Vector2 coll_start_size;
+        private Vector2 coll_start_offset;
         private Vector3 start_scale;
         private Vector3 last_ground_pos;
         private Vector3 average_ground_pos;
@@ -73,7 +71,6 @@ namespace IndieMarc.Platformer
         private bool is_dead = false;
         private bool was_grounded = false;
         private bool is_grounded = false;
-        private bool is_ceiled = false;
         private bool is_crouch = false;
         private bool is_jumping = false;
         private bool is_double_jump = false;
@@ -88,52 +85,57 @@ namespace IndieMarc.Platformer
         {
             character_list[player_id] = this;
             rigid = GetComponent<Rigidbody2D>();
-            capsule_coll = GetComponent<CapsuleCollider2D>();
-            coll_start_h = capsule_coll.size;
-            coll_start_off = capsule_coll.offset;
+            box_coll = GetComponent<BoxCollider2D>();
+            coll_start_size = box_coll.size;
+            coll_start_offset = box_coll.offset;
             start_scale = transform.localScale;
             average_ground_pos = transform.position;
             last_ground_pos = transform.position;
             hp = max_hp;
 
-            contact_filter = new ContactFilter2D();
-            contact_filter.layerMask = ground_layer;
-            contact_filter.useLayerMask = true;
-            contact_filter.useTriggers = false;
-
+            // Debugging
+            Debug.Log($"[PlayerCharacterOne] Awake: Player ID {player_id}, Start Position {transform.position}");
         }
 
         void OnDestroy()
         {
             character_list.Remove(player_id);
+            Debug.Log($"[PlayerCharacterOne] OnDestroy: Player ID {player_id} removed.");
         }
 
         void Start()
         {
-
+            // Additional startup debugging if needed
+            Debug.Log($"[PlayerCharacterOne] Start: Player ID {player_id}");
         }
 
-        //Handle physics
+        // Handle physics
         void FixedUpdate()
         {
             if (is_dead)
                 return;
 
-            //Movement velocity
+            // Movement velocity
             float desiredSpeed = Mathf.Abs(move_input.x) > 0.1f ? move_input.x * move_max : 0f;
             float acceleration = Mathf.Abs(move_input.x) > 0.1f ? move_accel : move_deccel;
             acceleration = !is_grounded ? jump_move_percent * acceleration : acceleration;
             move.x = Mathf.MoveTowards(move.x, desiredSpeed, acceleration * Time.fixedDeltaTime);
 
+            // Debugging
+            Debug.Log($"[FixedUpdate] move_input.x: {move_input.x}, desiredSpeed: {desiredSpeed}, acceleration: {acceleration}, move.x: {move.x}");
+
             UpdateFacing();
             UpdateJump();
             UpdateCrouch();
 
-            //Move
+            // Move
             rigid.velocity = move;
+
+            // Debugging
+            Debug.Log($"[FixedUpdate] Rigidbody velocity: {rigid.velocity}");
         }
 
-        //Handle render and controls
+        // Handle render and controls
         void Update()
         {
             if (is_dead)
@@ -142,21 +144,29 @@ namespace IndieMarc.Platformer
             hit_timer += Time.deltaTime;
             grounded_timer += Time.deltaTime;
 
-            //Controls
+            // Controls
             PlayerControlsOne controls = PlayerControlsOne.Get(player_id);
             move_input = !disable_controls ? controls.GetMove() : Vector2.zero;
             jump_press = !disable_controls ? controls.GetJumpDown() : false;
             jump_hold = !disable_controls ? controls.GetJumpHold() : false;
 
+            // Debugging
+            Debug.Log($"[Update] move_input: {move_input}, jump_press: {jump_press}, jump_hold: {jump_hold}");
+
             if (jump_press || move_input.y > 0.5f)
                 Jump();
 
-            //Reset when fall
+            // Reset when fall
             if (transform.position.y < fall_pos_y - GetSize().y)
             {
-                TakeDamage(max_hp * fall_damage_percent);
+                // For debugging, you can comment out the damage and death to prevent character from dying
+                // TakeDamage(max_hp * fall_damage_percent);
+
                 if (reset_when_fall)
                     Teleport(last_ground_pos);
+
+                // Debugging
+                Debug.Log($"[Update] Player fell below fall_pos_y: {fall_pos_y}, Teleporting to last ground position: {last_ground_pos}");
             }
         }
 
@@ -166,60 +176,70 @@ namespace IndieMarc.Platformer
             {
                 float side = (move.x < 0f) ? -1f : 1f;
                 transform.localScale = new Vector3(start_scale.x * side, start_scale.y, start_scale.z);
+
+                // Debugging
+                Debug.Log($"[UpdateFacing] Facing direction changed. New localScale.x: {transform.localScale.x}");
             }
         }
 
         private void UpdateJump()
         {
-            //Jump
+            // Update the previous grounded state
             was_grounded = is_grounded;
-            is_grounded = DetectGrounded(false);
-            is_ceiled = DetectGrounded(true);
+
+            // Detect if the character is grounded
+            is_grounded = DetectGrounded();
+
             jump_timer += Time.fixedDeltaTime;
 
-            //Jump end timer
+            // Debugging
+            Debug.Log($"[UpdateJump] was_grounded: {was_grounded}, is_grounded: {is_grounded}, is_jumping: {is_jumping}, jump_timer: {jump_timer}");
+
+            // Handle jump timing
             if (is_jumping && !jump_hold && jump_timer > jump_time_min)
                 is_jumping = false;
             if (is_jumping && jump_timer > jump_time_max)
                 is_jumping = false;
 
-            //Jump hit ceil
-            if (is_ceiled)
-            {
-                is_jumping = false;
-                move.y = Mathf.Min(move.y, 0f);
-            }
-
-            //Add jump velocity
+            // Apply gravity and vertical movement
             if (!is_grounded)
             {
-                //Falling
-                float gravity = !is_jumping ? jump_fall_gravity : jump_gravity; //Gravity increased when going down
+                // Character is in the air
+                float gravity = !is_jumping ? jump_fall_gravity : jump_gravity; // Adjust gravity based on jumping state
                 move.y = Mathf.MoveTowards(move.y, -move_max * 2f, gravity * Time.fixedDeltaTime);
+
+                // Debugging
+                Debug.Log($"[UpdateJump] In air. Applying gravity: {gravity}, move.y: {move.y}");
             }
             else if (!is_jumping)
             {
-                //Grounded
+                // Character is on the ground and not jumping
                 move.y = 0f;
+
+                // Debugging
+                Debug.Log("[UpdateJump] Grounded. Resetting vertical movement.");
             }
 
             if (!is_grounded)
                 grounded_timer = 0f;
 
-            //Average grounded pos
+            // Update grounded position
             if (!was_grounded && is_grounded)
                 average_ground_pos = transform.position;
             if (is_grounded)
                 average_ground_pos = Vector3.Lerp(transform.position, average_ground_pos, 1f * Time.deltaTime);
 
-            //Save last landed position
+            // Save last landed position
             if (is_grounded && grounded_timer > 1f)
                 last_ground_pos = average_ground_pos;
 
+            // Handle landing event
             if (!was_grounded && is_grounded)
             {
-                if (onLand != null)
-                    onLand.Invoke();
+                onLand?.Invoke();
+
+                // Debugging
+                Debug.Log("[UpdateJump] Landed on ground.");
             }
         }
 
@@ -228,26 +248,34 @@ namespace IndieMarc.Platformer
             if (!can_crouch)
                 return;
 
-            //Crouch
+            // Crouch
             bool was_crouch = is_crouch;
             if (move_input.y < -0.1f && is_grounded)
             {
                 is_crouch = true;
                 move = Vector2.zero;
-                capsule_coll.size = new Vector2(coll_start_h.x, coll_start_h.y * crouch_coll_percent);
-                capsule_coll.offset = new Vector2(coll_start_off.x, coll_start_off.y - coll_start_h.y * (1f - crouch_coll_percent) / 2f);
+                box_coll.size = new Vector2(coll_start_size.x, coll_start_size.y * crouch_coll_percent);
+                box_coll.offset = new Vector2(coll_start_offset.x, coll_start_offset.y - coll_start_size.y * (1f - crouch_coll_percent) / 2f);
 
                 if (!was_crouch && is_crouch)
                 {
-                    if (onCrouch != null)
-                        onCrouch.Invoke();
+                    onCrouch?.Invoke();
+
+                    // Debugging
+                    Debug.Log("[UpdateCrouch] Started crouching.");
                 }
             }
             else
             {
                 is_crouch = false;
-                capsule_coll.size = coll_start_h;
-                capsule_coll.offset = coll_start_off;
+                box_coll.size = coll_start_size;
+                box_coll.offset = coll_start_offset;
+
+                if (was_crouch && !is_crouch)
+                {
+                    // Debugging
+                    Debug.Log("[UpdateCrouch] Stopped crouching.");
+                }
             }
         }
 
@@ -261,47 +289,32 @@ namespace IndieMarc.Platformer
                     move.y = jump_strength;
                     jump_timer = 0f;
                     is_jumping = true;
-                    if (onJump != null)
-                        onJump.Invoke();
+                    onJump?.Invoke();
+
+                    // Debugging
+                    Debug.Log($"[Jump] Jump initiated. is_double_jump: {is_double_jump}, move.y: {move.y}");
                 }
             }
         }
 
-        private bool DetectGrounded(bool detect_ceiled)
+        private bool DetectGrounded()
         {
-            bool grounded = false;
-            Vector2[] raycastPositions = new Vector2[3];
+            Vector2 position = rigid.position + box_coll.offset + Vector2.down * (box_coll.size.y / 2f);
+            float rayLength = ground_raycast_dist;
 
-            Vector2 raycast_start = rigid.position;
-            Vector2 orientation = detect_ceiled ? Vector2.up : Vector2.down;
-            float radius = GetSize().x * 0.5f * transform.localScale.y; ;
+            RaycastHit2D hit = Physics2D.Raycast(position, Vector2.down, rayLength, ground_layer);
+            Debug.DrawRay(position, Vector2.down * rayLength, Color.red);
 
-            if (capsule_coll != null)
+            if (hit.collider != null && hit.collider != box_coll && !hit.collider.isTrigger)
             {
-                //Adapt raycast to collider
-                Vector2 raycast_offset = capsule_coll.offset + orientation * Mathf.Abs(capsule_coll.size.y * 0.5f - capsule_coll.size.x * 0.5f);
-                raycast_start = rigid.position + raycast_offset * transform.localScale.y;
+                Debug.Log($"[DetectGrounded] Hit detected with {hit.collider.name} at point {hit.point}");
+                return true;
             }
-
-            float ray_size = radius + ground_raycast_dist;
-            raycastPositions[0] = raycast_start + Vector2.left * radius / 2f;
-            raycastPositions[1] = raycast_start;
-            raycastPositions[2] = raycast_start + Vector2.right * radius / 2f;
-
-            RaycastHit2D[] hitBuffer = new RaycastHit2D[5];
-            for (int i = 0; i < raycastPositions.Length; i++)
+            else
             {
-                Physics2D.Raycast(raycastPositions[i], orientation, contact_filter, hitBuffer, ray_size);
-                Debug.DrawRay(raycastPositions[i], orientation * ray_size);
-                for (int j = 0; j < hitBuffer.Length; j++)
-                {
-                    if (hitBuffer[j].collider != null && hitBuffer[j].collider != capsule_coll && !hitBuffer[j].collider.isTrigger)
-                    {
-                        grounded = true;
-                    }
-                }
+                Debug.Log("[DetectGrounded] No ground detected.");
+                return false;
             }
-            return grounded;
         }
 
         public void Teleport(Vector3 pos)
@@ -309,6 +322,9 @@ namespace IndieMarc.Platformer
             transform.position = pos;
             move = Vector2.zero;
             is_jumping = false;
+
+            // Debugging
+            Debug.Log($"[Teleport] Teleported to position {pos}");
         }
 
         public void HealDamage(float heal)
@@ -317,6 +333,9 @@ namespace IndieMarc.Platformer
             {
                 hp += heal;
                 hp = Mathf.Min(hp, max_hp);
+
+                // Debugging
+                Debug.Log($"[HealDamage] Healed {heal} HP. Current HP: {hp}");
             }
         }
 
@@ -327,14 +346,16 @@ namespace IndieMarc.Platformer
                 hp -= damage;
                 hit_timer = -1f;
 
+                // Debugging
+                Debug.Log($"[TakeDamage] Took {damage} damage. Current HP: {hp}");
+
                 if (hp <= 0f)
                 {
                     Kill();
                 }
                 else
                 {
-                    if (onHit != null)
-                        onHit.Invoke();
+                    onHit?.Invoke();
                 }
             }
         }
@@ -348,9 +369,26 @@ namespace IndieMarc.Platformer
                 move = Vector2.zero;
                 move_input = Vector2.zero;
 
-                if (onDeath != null)
-                    onDeath.Invoke();
+                onDeath?.Invoke();
+
+                // Debugging
+                Debug.Log("[Kill] Character has died.");
+
+                // For debugging, respawn the character after a delay
+                StartCoroutine(RespawnCharacter());
             }
+        }
+
+        private IEnumerator RespawnCharacter()
+        {
+            yield return new WaitForSeconds(2f); // Wait for 2 seconds
+            is_dead = false;
+            hp = max_hp;
+            Teleport(last_ground_pos);
+            EnableControls();
+
+            // Debugging
+            Debug.Log("[RespawnCharacter] Character has respawned.");
         }
 
         public void DisableControls() { disable_controls = true; }
@@ -393,19 +431,21 @@ namespace IndieMarc.Platformer
 
         public Vector2 GetSize()
         {
-            if (capsule_coll != null)
-                return new Vector2(Mathf.Abs(transform.localScale.x) * capsule_coll.size.x, Mathf.Abs(transform.localScale.y) * capsule_coll.size.y);
+            if (box_coll != null)
+                return new Vector2(Mathf.Abs(transform.localScale.x) * box_coll.size.x, Mathf.Abs(transform.localScale.y) * box_coll.size.y);
             return new Vector2(Mathf.Abs(transform.localScale.x), Mathf.Abs(transform.localScale.y));
         }
-        
+
         private void OnCollisionEnter2D(Collision2D collision)
         {
             if (is_dead)
                 return;
-            
+
+            // Debugging
+            Debug.Log($"[OnCollisionEnter2D] Collided with {collision.collider.name} on layer {LayerMask.LayerToName(collision.collider.gameObject.layer)}");
         }
 
-        public static PlayerCharacterOne GetNearest(Vector3 pos, float range = 99999f, bool alive_only=false)
+        public static PlayerCharacterOne GetNearest(Vector3 pos, float range = 99999f, bool alive_only = false)
         {
             PlayerCharacterOne nearest = null;
             float min_dist = range;
@@ -426,12 +466,9 @@ namespace IndieMarc.Platformer
 
         public static PlayerCharacterOne Get(int player_id)
         {
-            foreach (PlayerCharacterOne character in GetAll())
+            if (character_list.TryGetValue(player_id, out PlayerCharacterOne character))
             {
-                if (character.player_id == player_id)
-                {
-                    return character;
-                }
+                return character;
             }
             return null;
         }
@@ -443,5 +480,4 @@ namespace IndieMarc.Platformer
             return list;
         }
     }
-
 }

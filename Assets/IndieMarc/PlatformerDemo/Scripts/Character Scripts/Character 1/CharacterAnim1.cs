@@ -20,19 +20,29 @@ namespace IndieMarc.Platformer
 
             character.onJump += OnJump;
             character.onCrouch += OnCrouch;
+            character.onDeath += OnDeath; // Added death handling
         }
 
         void Update()
         {
+            if (character.IsDead())
+            {
+                animator.SetBool("Dead", true);
+                return;
+            }
+            else
+            {
+                animator.SetBool("Dead", false);
+            }
 
-            //Anims
+            // Anims
             animator.SetBool("Jumping", character.IsJumping());
             animator.SetBool("InAir", !character.IsGrounded());
             animator.SetBool("Crouching", character.IsCrouching());
-            animator.SetFloat("Speed", character.GetMove().magnitude);
+            animator.SetFloat("Speed", Mathf.Abs(character.GetMove().x));
+
             if (character_item != null)
                 animator.SetBool("Hold", character_item.GetHeldItem() != null);
-
         }
 
         void OnCrouch()
@@ -44,6 +54,10 @@ namespace IndieMarc.Platformer
         {
             animator.SetTrigger("Jump");
         }
-    }
 
+        void OnDeath()
+        {
+            animator.SetTrigger("Death");
+        }
+    }
 }

@@ -7,7 +7,7 @@ namespace IndieMarc.Platformer
 {
 
     [RequireComponent(typeof(Rigidbody2D))]
-    [RequireComponent(typeof(CapsuleCollider2D))]
+    [RequireComponent(typeof(BoxCollider2D))]
     public class PlayerCharacterTwo : MonoBehaviour
     {
         public int player_id = 2; 
