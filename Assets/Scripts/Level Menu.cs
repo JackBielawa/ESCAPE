@@ -51,7 +51,7 @@ public class LevelMenu : MonoBehaviour
         }
 
     }
-    public void BackToMenuButton ()
+    public void MainMenuButton ()
     {
         SceneManager.LoadScene(0);
     }
