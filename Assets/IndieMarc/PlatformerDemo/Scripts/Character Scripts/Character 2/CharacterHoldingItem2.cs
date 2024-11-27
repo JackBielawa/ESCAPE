@@ -4,16 +4,14 @@ using UnityEngine;
 
 namespace IndieMarc.Platformer
 {
-    [RequireComponent(typeof(PlayerCharacterTwo))] // Reference PlayerCharacterTwo instead of PlayerCharacter
+    [RequireComponent(typeof(PlayerCharacterTwo))] // Reference PlayerCharacterTwo
     public class CharacterHoldItemTwo : MonoBehaviour
     {
         public Transform hand;
-        public float itemUseCooldown = 1f; // Cooldown between item uses
 
         private PlayerCharacterTwo character; // Update to PlayerCharacterTwo
         private CarryItem held_item = null;
         private float take_item_timer = 0f;
-        private float use_item_timer = 0f;
 
         void Awake()
         {
@@ -30,19 +28,8 @@ namespace IndieMarc.Platformer
             PlayerControlsTwo controls = PlayerControlsTwo.Get(character.player_id);
 
             take_item_timer += Time.deltaTime;
-            use_item_timer += Time.deltaTime; // Track cooldown
-
-            if (held_item && controls.GetActionDown() && use_item_timer >= itemUseCooldown)
-            {
+            if (held_item && controls.GetActionDown())
                 held_item.UseItem();
-                use_item_timer = 0f; // Reset cooldown
-            }
-
-            // Drop item with a secondary key
-            if (controls.GetActionHold())
-            {
-                DropItem();
-            }
         }
 
         private void LateUpdate()
@@ -70,8 +57,9 @@ namespace IndieMarc.Platformer
             {
                 held_item.Drop();
                 held_item = null;
-                // Optional: Add custom behavior upon dropping, such as a sound or visual effect.
-                Debug.Log("Player 2 has dropped an item with a special effect!");
+
+                // Debugging
+                Debug.Log($"[CharacterHoldItemTwo] Player {character.player_id} dropped the item.");
             }
         }
 
