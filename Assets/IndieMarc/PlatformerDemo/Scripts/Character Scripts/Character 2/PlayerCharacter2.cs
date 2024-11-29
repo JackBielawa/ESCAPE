@@ -61,6 +61,8 @@ namespace IndieMarc.Platformer
         private Vector2 move_input;
         private bool jump_press;
         private bool jump_hold;
+        private bool action_press;
+        private bool action_hold;
 
         private float hp;
         private bool is_dead = false;
@@ -144,6 +146,9 @@ namespace IndieMarc.Platformer
             move_input = !disable_controls ? controls.GetMove() : Vector2.zero;
             jump_press = !disable_controls ? controls.GetJumpDown() : false;
             jump_hold = !disable_controls ? controls.GetJumpHold() : false;
+            action_press = !disable_controls ? controls.GetActionDown() : false;
+            action_hold = !disable_controls ? controls.GetActionHold() : false;
+
 
             // Debugging
             Debug.Log($"[Update] Player {player_id}: move_input: {move_input}, jump_press: {jump_press}, jump_hold: {jump_hold}");
