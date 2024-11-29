@@ -12,12 +12,14 @@ namespace IndieMarc.Platformer
     public class PlayerControlsOne : MonoBehaviour
     {
         public int player_id;
-        public KeyCode left_key = KeyCode.A;
-        public KeyCode right_key = KeyCode.D;
-        public KeyCode up_key = KeyCode.W;
-        public KeyCode down_key = KeyCode.S;
-        public KeyCode jump_key = KeyCode.Space;
-        public KeyCode action_key = KeyCode.E;
+
+        // Key variables are private to prevent changes from the Inspector
+        private KeyCode left_key = KeyCode.LeftArrow;
+        private KeyCode right_key = KeyCode.RightArrow;
+        private KeyCode up_key = KeyCode.UpArrow;
+        private KeyCode down_key = KeyCode.DownArrow;
+        private KeyCode jump_key = KeyCode.UpArrow; // Up arrow for jump
+        private KeyCode action_key = KeyCode.Space; // Space key for action (shooting)
 
         private Vector2 move = Vector2.zero;
         private bool jump_press = false;
@@ -45,31 +47,34 @@ namespace IndieMarc.Platformer
             action_hold = false;
             action_press = false;
 
+            // Movement input
             if (Input.GetKey(left_key))
-                move += -Vector2.right;
+                move += Vector2.left;
             if (Input.GetKey(right_key))
                 move += Vector2.right;
             if (Input.GetKey(up_key))
                 move += Vector2.up;
             if (Input.GetKey(down_key))
-                move += -Vector2.up;
+                move += Vector2.down;
+
+            // Jump input
             if (Input.GetKey(jump_key))
                 jump_hold = true;
             if (Input.GetKeyDown(jump_key))
                 jump_press = true;
+
+            // Action input
             if (Input.GetKey(action_key))
                 action_hold = true;
             if (Input.GetKeyDown(action_key))
                 action_press = true;
 
+            // Normalize movement vector to ensure consistent speed
             float move_length = Mathf.Min(move.magnitude, 1f);
             move = move.normalized * move_length;
-
-            // Debugging
-            Debug.Log($"[PlayerControlsOne] Player {player_id}: Move={move}, JumpPress={jump_press}, JumpHold={jump_hold}");
         }
 
-        //------ These functions should be called from the Update function, not FixedUpdate
+        // Public methods to access input states
         public Vector2 GetMove()
         {
             return move;
@@ -95,8 +100,7 @@ namespace IndieMarc.Platformer
             return action_hold;
         }
 
-        //-----------
-
+        // Static methods for accessing controls by player ID
         public static PlayerControlsOne Get(int player_id)
         {
             if (controls.TryGetValue(player_id, out PlayerControlsOne control))

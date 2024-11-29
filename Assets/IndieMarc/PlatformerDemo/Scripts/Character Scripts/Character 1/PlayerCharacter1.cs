@@ -48,6 +48,11 @@ namespace IndieMarc.Platformer
         public float fall_pos_y = -5f;
         public float fall_damage_percent = 0.25f;
 
+        [Header("Shooting")]
+        public bool can_shoot = false; // Indicates if the player can shoot
+        public GameObject fireballPrefab; // Assign the fireball prefab in the Inspector
+        public Transform firePoint; // The point from where the fireball will be instantiated
+
         public UnityAction onDeath;
         public UnityAction onHit;
         public UnityAction onJump;
@@ -66,6 +71,8 @@ namespace IndieMarc.Platformer
         private Vector2 move_input;
         private bool jump_press;
         private bool jump_hold;
+        private bool action_press;
+        private bool action_hold;
 
         private float hp;
         private bool is_dead = false;
@@ -78,6 +85,8 @@ namespace IndieMarc.Platformer
         private float grounded_timer = 0f;
         private float jump_timer = 0f;
         private float hit_timer = 0f;
+
+        private bool facingRight = true; // Indicates if the player is facing right
 
         private static Dictionary<int, PlayerCharacterOne> character_list = new Dictionary<int, PlayerCharacterOne>();
 
@@ -92,24 +101,27 @@ namespace IndieMarc.Platformer
             average_ground_pos = transform.position;
             last_ground_pos = transform.position;
             hp = max_hp;
+        }
 
-            // Debugging
-            Debug.Log($"[PlayerCharacterOne] Awake: Player ID {player_id}, Start Position {transform.position}");
+        void Start()
+        {
+            // If firePoint is not assigned, create it
+            if (firePoint == null)
+            {
+                GameObject firePointObject = new GameObject("FirePoint");
+                firePointObject.transform.parent = transform;
+                firePoint = firePointObject.transform;
+
+                // Set initial position based on facing direction
+                firePoint.localPosition = new Vector3(0.5f, 0, 0);
+            }
         }
 
         void OnDestroy()
         {
             character_list.Remove(player_id);
-            Debug.Log($"[PlayerCharacterOne] OnDestroy: Player ID {player_id} removed.");
         }
 
-        void Start()
-        {
-            // Additional startup debugging if needed
-            Debug.Log($"[PlayerCharacterOne] Start: Player ID {player_id}");
-        }
-
-        // Handle physics
         void FixedUpdate()
         {
             if (is_dead)
@@ -121,21 +133,14 @@ namespace IndieMarc.Platformer
             acceleration = !is_grounded ? jump_move_percent * acceleration : acceleration;
             move.x = Mathf.MoveTowards(move.x, desiredSpeed, acceleration * Time.fixedDeltaTime);
 
-            // Debugging
-            Debug.Log($"[FixedUpdate] move_input.x: {move_input.x}, desiredSpeed: {desiredSpeed}, acceleration: {acceleration}, move.x: {move.x}");
-
             UpdateFacing();
             UpdateJump();
             UpdateCrouch();
 
-            // Move
+            // Apply movement
             rigid.velocity = move;
-
-            // Debugging
-            Debug.Log($"[FixedUpdate] Rigidbody velocity: {rigid.velocity}");
         }
 
-        // Handle render and controls
         void Update()
         {
             if (is_dead)
@@ -149,24 +154,76 @@ namespace IndieMarc.Platformer
             move_input = !disable_controls ? controls.GetMove() : Vector2.zero;
             jump_press = !disable_controls ? controls.GetJumpDown() : false;
             jump_hold = !disable_controls ? controls.GetJumpHold() : false;
+            action_press = !disable_controls ? controls.GetActionDown() : false;
+            action_hold = !disable_controls ? controls.GetActionHold() : false;
 
             // Debugging
-            Debug.Log($"[Update] move_input: {move_input}, jump_press: {jump_press}, jump_hold: {jump_hold}");
+            Debug.Log($"[Update] can_shoot: {can_shoot}, action_press: {action_press}");
 
-            if (jump_press || move_input.y > 0.5f)
+            if (jump_press)
                 Jump();
 
-            // Reset when fall
+            if (can_shoot && action_press)
+            {
+                Debug.Log("[Update] Attempting to shoot fireball.");
+                ShootFireball();
+            }
+
+            // Reset when falling below a certain point
             if (transform.position.y < fall_pos_y - GetSize().y)
             {
-                // For debugging, you can comment out the damage and death to prevent character from dying
-                // TakeDamage(max_hp * fall_damage_percent);
-
                 if (reset_when_fall)
                     Teleport(last_ground_pos);
+            }
+        }
 
-                // Debugging
-                Debug.Log($"[Update] Player fell below fall_pos_y: {fall_pos_y}, Teleporting to last ground position: {last_ground_pos}");
+        public void EnableShooting()
+        {
+            can_shoot = true;
+            Debug.Log("[EnableShooting] Shooting enabled.");
+        }
+
+        public void DisableShooting()
+        {
+            can_shoot = false;
+            Debug.Log("[DisableShooting] Shooting disabled.");
+        }
+
+        private void ShootFireball()
+        {
+            Debug.Log("[ShootFireball] Called.");
+
+            if (fireballPrefab != null && firePoint != null)
+            {
+                // Instantiate the fireball at the fire point position
+                GameObject fireball = Instantiate(fireballPrefab, firePoint.position, firePoint.rotation);
+                Debug.Log("[ShootFireball] Fireball instantiated.");
+
+                // Get the Rigidbody2D component from the fireball
+                Rigidbody2D fireballRb = fireball.GetComponent<Rigidbody2D>();
+                if (fireballRb != null)
+                {
+                    // Determine the direction based on the player's facing direction
+                    Vector2 direction = GetFacing().normalized;
+
+                    // Set the velocity of the fireball
+                    Fireball fireballScript = fireball.GetComponent<Fireball>();
+                    float speed = fireballScript != null ? fireballScript.speed : 5f;
+                    fireballRb.velocity = direction * speed;
+
+                    Debug.Log($"[ShootFireball] Fireball velocity set. Direction: {direction}, Speed: {speed}");
+                }
+                else
+                {
+                    Debug.LogWarning("[ShootFireball] Rigidbody2D component not found on the fireball prefab.");
+                }
+            }
+            else
+            {
+                if (fireballPrefab == null)
+                    Debug.LogWarning("[ShootFireball] fireballPrefab is not assigned.");
+                if (firePoint == null)
+                    Debug.LogWarning("[ShootFireball] firePoint is not assigned.");
             }
         }
 
@@ -174,26 +231,26 @@ namespace IndieMarc.Platformer
         {
             if (Mathf.Abs(move.x) > 0.01f)
             {
-                float side = (move.x < 0f) ? -1f : 1f;
+                facingRight = move.x > 0f;
+                float side = facingRight ? 1f : -1f;
                 transform.localScale = new Vector3(start_scale.x * side, start_scale.y, start_scale.z);
 
-                // Debugging
-                Debug.Log($"[UpdateFacing] Facing direction changed. New localScale.x: {transform.localScale.x}");
+                // Adjust firePoint position based on facing direction
+                if (firePoint != null)
+                {
+                    firePoint.localPosition = new Vector3(facingRight ? 0.5f : -0.5f, 0, 0);
+                }
             }
         }
 
         private void UpdateJump()
         {
-            // Update the previous grounded state
             was_grounded = is_grounded;
 
             // Detect if the character is grounded
             is_grounded = DetectGrounded();
 
             jump_timer += Time.fixedDeltaTime;
-
-            // Debugging
-            Debug.Log($"[UpdateJump] was_grounded: {was_grounded}, is_grounded: {is_grounded}, is_jumping: {is_jumping}, jump_timer: {jump_timer}");
 
             // Handle jump timing
             if (is_jumping && !jump_hold && jump_timer > jump_time_min)
@@ -205,19 +262,13 @@ namespace IndieMarc.Platformer
             if (!is_grounded)
             {
                 // Character is in the air
-                float gravity = !is_jumping ? jump_fall_gravity : jump_gravity; // Adjust gravity based on jumping state
+                float gravity = !is_jumping ? jump_fall_gravity : jump_gravity;
                 move.y = Mathf.MoveTowards(move.y, -move_max * 2f, gravity * Time.fixedDeltaTime);
-
-                // Debugging
-                Debug.Log($"[UpdateJump] In air. Applying gravity: {gravity}, move.y: {move.y}");
             }
             else if (!is_jumping)
             {
                 // Character is on the ground and not jumping
                 move.y = 0f;
-
-                // Debugging
-                Debug.Log("[UpdateJump] Grounded. Resetting vertical movement.");
             }
 
             if (!is_grounded)
@@ -237,9 +288,6 @@ namespace IndieMarc.Platformer
             if (!was_grounded && is_grounded)
             {
                 onLand?.Invoke();
-
-                // Debugging
-                Debug.Log("[UpdateJump] Landed on ground.");
             }
         }
 
@@ -248,7 +296,6 @@ namespace IndieMarc.Platformer
             if (!can_crouch)
                 return;
 
-            // Crouch
             bool was_crouch = is_crouch;
             if (move_input.y < -0.1f && is_grounded)
             {
@@ -260,9 +307,6 @@ namespace IndieMarc.Platformer
                 if (!was_crouch && is_crouch)
                 {
                     onCrouch?.Invoke();
-
-                    // Debugging
-                    Debug.Log("[UpdateCrouch] Started crouching.");
                 }
             }
             else
@@ -270,12 +314,6 @@ namespace IndieMarc.Platformer
                 is_crouch = false;
                 box_coll.size = coll_start_size;
                 box_coll.offset = coll_start_offset;
-
-                if (was_crouch && !is_crouch)
-                {
-                    // Debugging
-                    Debug.Log("[UpdateCrouch] Stopped crouching.");
-                }
             }
         }
 
@@ -290,9 +328,6 @@ namespace IndieMarc.Platformer
                     jump_timer = 0f;
                     is_jumping = true;
                     onJump?.Invoke();
-
-                    // Debugging
-                    Debug.Log($"[Jump] Jump initiated. is_double_jump: {is_double_jump}, move.y: {move.y}");
                 }
             }
         }
@@ -307,12 +342,10 @@ namespace IndieMarc.Platformer
 
             if (hit.collider != null && hit.collider != box_coll && !hit.collider.isTrigger)
             {
-                Debug.Log($"[DetectGrounded] Hit detected with {hit.collider.name} at point {hit.point}");
                 return true;
             }
             else
             {
-                Debug.Log("[DetectGrounded] No ground detected.");
                 return false;
             }
         }
@@ -322,9 +355,6 @@ namespace IndieMarc.Platformer
             transform.position = pos;
             move = Vector2.zero;
             is_jumping = false;
-
-            // Debugging
-            Debug.Log($"[Teleport] Teleported to position {pos}");
         }
 
         public void HealDamage(float heal)
@@ -333,9 +363,6 @@ namespace IndieMarc.Platformer
             {
                 hp += heal;
                 hp = Mathf.Min(hp, max_hp);
-
-                // Debugging
-                Debug.Log($"[HealDamage] Healed {heal} HP. Current HP: {hp}");
             }
         }
 
@@ -345,9 +372,6 @@ namespace IndieMarc.Platformer
             {
                 hp -= damage;
                 hit_timer = -1f;
-
-                // Debugging
-                Debug.Log($"[TakeDamage] Took {damage} damage. Current HP: {hp}");
 
                 if (hp <= 0f)
                 {
@@ -371,10 +395,7 @@ namespace IndieMarc.Platformer
 
                 onDeath?.Invoke();
 
-                // Debugging
-                Debug.Log("[Kill] Character has died.");
-
-                // For debugging, respawn the character after a delay
+                // Respawn the character after a delay
                 StartCoroutine(RespawnCharacter());
             }
         }
@@ -386,9 +407,6 @@ namespace IndieMarc.Platformer
             hp = max_hp;
             Teleport(last_ground_pos);
             EnableControls();
-
-            // Debugging
-            Debug.Log("[RespawnCharacter] Character has respawned.");
         }
 
         public void DisableControls() { disable_controls = true; }
@@ -440,9 +458,6 @@ namespace IndieMarc.Platformer
         {
             if (is_dead)
                 return;
-
-            // Debugging
-            Debug.Log($"[OnCollisionEnter2D] Collided with {collision.collider.name} on layer {LayerMask.LayerToName(collision.collider.gameObject.layer)}");
         }
 
         public static PlayerCharacterOne GetNearest(Vector3 pos, float range = 99999f, bool alive_only = false)
