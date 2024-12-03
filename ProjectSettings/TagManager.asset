@@ -7,6 +7,8 @@ TagManager:
   - Enemy
   - Dragon
   - PowerUps
+  - PowerUpTwo
+  - PlayerTwo
   layers:
   - Default
   - TransparentFX

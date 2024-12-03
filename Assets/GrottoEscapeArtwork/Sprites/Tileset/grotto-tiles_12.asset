@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: grotto-tiles_12
   m_EditorClassIdentifier: 
   m_Sprite: {fileID: 21300024, guid: a46d971ae01934916af79f05ddb6d087, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.7997363, g: 0.8490566, b: 0.09211465, a: 1}
   m_Transform:
     e00: 1
     e01: 0

@@ -43,6 +43,9 @@ namespace IndieMarc.Platformer
         public float fall_pos_y = -5f;
         public float fall_damage_percent = 0.25f;
 
+        [Header("Transformation")]
+        public GameObject rectanglePrefab; // Assign your Rectangle prefab here
+
         public UnityAction onDeath;
         public UnityAction onHit;
         public UnityAction onJump;
@@ -76,6 +79,15 @@ namespace IndieMarc.Platformer
         private float jump_timer = 0f;
         private float hit_timer = 0f;
 
+        // New variables for power-up and transformation
+        private bool hasPowerUp = false;
+        private bool isRectangleForm = false;
+        private GameObject rectangleInstance;
+        private Vector2 originalColliderSize;
+        private Vector2 originalColliderOffset;
+        private Vector2 rectangleColliderSize;
+        private Vector2 rectangleColliderOffset;
+
         private static Dictionary<int, PlayerCharacterTwo> character_list = new Dictionary<int, PlayerCharacterTwo>();
 
         void Awake()
@@ -89,6 +101,10 @@ namespace IndieMarc.Platformer
             average_ground_pos = transform.position;
             last_ground_pos = transform.position;
             hp = max_hp;
+
+            // Store original collider size and offset
+            originalColliderSize = box_coll.size;
+            originalColliderOffset = box_coll.offset;
 
             // Debugging
             Debug.Log($"[PlayerCharacterTwo] Awake: Player ID {player_id}, Start Position {transform.position}");
@@ -149,12 +165,17 @@ namespace IndieMarc.Platformer
             action_press = !disable_controls ? controls.GetActionDown() : false;
             action_hold = !disable_controls ? controls.GetActionHold() : false;
 
-
             // Debugging
             Debug.Log($"[Update] Player {player_id}: move_input: {move_input}, jump_press: {jump_press}, jump_hold: {jump_hold}");
 
             if (jump_press || move_input.y > 0.5f)
                 Jump();
+
+            // Handle transformation
+            if (hasPowerUp && action_press)
+            {
+                ToggleForm();
+            }
 
             // Reset when fall
             if (transform.position.y < fall_pos_y - GetSize().y)
@@ -443,6 +464,73 @@ namespace IndieMarc.Platformer
 
             // Debugging
             Debug.Log($"[OnCollisionEnter2D] Player {player_id}: Collided with {collision.collider.name} on layer {LayerMask.LayerToName(collision.collider.gameObject.layer)}");
+        }
+
+        // New method to collect the power-up
+        public void CollectPowerUp()
+        {
+            hasPowerUp = true;
+            Debug.Log($"[CollectPowerUp] Player {player_id}: Power-up collected.");
+        }
+
+        // New method to toggle between forms
+        private void ToggleForm()
+        {
+            isRectangleForm = !isRectangleForm;
+
+            if (isRectangleForm)
+            {
+                // Switch to rectangle form
+                if (rectangleInstance == null)
+                {
+                    rectangleInstance = Instantiate(rectanglePrefab, transform);
+                    rectangleInstance.transform.localPosition = Vector3.zero;
+
+                    // Get rectangle collider size and offset
+                    BoxCollider2D rectCollider = rectangleInstance.GetComponent<BoxCollider2D>();
+                    if (rectCollider != null)
+                    {
+                        rectangleColliderSize = rectCollider.size;
+                        rectangleColliderOffset = rectCollider.offset;
+                    }
+                    else
+                    {
+                        // Set default values if collider not found
+                        rectangleColliderSize = originalColliderSize;
+                        rectangleColliderOffset = originalColliderOffset;
+                    }
+
+                    // Disable rectangle's own collider to avoid conflicts
+                    if (rectCollider != null)
+                        rectCollider.enabled = false;
+                }
+                rectangleInstance.SetActive(true);
+
+                // Disable player's visual components
+                GetComponent<SpriteRenderer>().enabled = false;
+
+                // Adjust collider size
+                box_coll.size = rectangleColliderSize;
+                box_coll.offset = rectangleColliderOffset;
+
+                Debug.Log($"[ToggleForm] Player {player_id}: Transformed into rectangle.");
+            }
+            else
+            {
+                // Switch to normal form
+                if (rectangleInstance != null)
+                {
+                    rectangleInstance.SetActive(false);
+                }
+                // Enable player's visual components
+                GetComponent<SpriteRenderer>().enabled = true;
+
+                // Restore collider size
+                box_coll.size = originalColliderSize;
+                box_coll.offset = originalColliderOffset;
+
+                Debug.Log($"[ToggleForm] Player {player_id}: Reverted to normal form.");
+            }
         }
 
         public static PlayerCharacterTwo GetNearest(Vector3 pos, float range = 99999f, bool alive_only = false)

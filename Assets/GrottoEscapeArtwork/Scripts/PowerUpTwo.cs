@@ -1,18 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using IndieMarc.Platformer;
 
 public class PowerUpTwo : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    void OnTriggerEnter2D(Collider2D other)
     {
-        
-    }
+        PlayerCharacterTwo player = other.GetComponent<PlayerCharacterTwo>();
+        if (player != null)
+        {
+            player.CollectPowerUp();
+            Destroy(gameObject);
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+            // Debugging
+            Debug.Log("[PowerUpTwo] Power-up collected by Player 2.");
+        }
     }
 }
