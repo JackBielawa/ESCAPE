@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Player controls for platformer demo
+/// Player controls for platformer demo (Second Player)
 /// Author: Indie Marc (Marc-Antoine Desbiens)
 /// </summary>
 
@@ -11,15 +11,15 @@ namespace IndieMarc.Platformer
 {
     public class PlayerControlsTwo : MonoBehaviour
     {
-        public int player_id;
+        public int player_id = 2; // Set this to a different ID for the second player
 
-        // Key variables are private to prevent changes from the Inspector
-        private KeyCode left_key = KeyCode.A;
-        private KeyCode right_key = KeyCode.D;
-        private KeyCode up_key = KeyCode.W;
-        private KeyCode down_key = KeyCode.S;
-        private KeyCode jump_key = KeyCode.W; // W for jump
-        private KeyCode action_key = KeyCode.E; // E key for action (shooting)
+        // Assign default keys for the second player
+        public KeyCode left_key = KeyCode.LeftArrow;
+        public KeyCode right_key = KeyCode.RightArrow;
+        public KeyCode up_key = KeyCode.UpArrow;
+        public KeyCode down_key = KeyCode.DownArrow;
+        public KeyCode jump_key = KeyCode.RightControl; // Or any preferred key
+        public KeyCode action_key = KeyCode.RightShift; // Or any preferred action key
 
         private Vector2 move = Vector2.zero;
         private bool jump_press = false;
@@ -47,7 +47,6 @@ namespace IndieMarc.Platformer
             action_hold = false;
             action_press = false;
 
-            // Movement input
             if (Input.GetKey(left_key))
                 move += Vector2.left;
             if (Input.GetKey(right_key))
@@ -56,25 +55,23 @@ namespace IndieMarc.Platformer
                 move += Vector2.up;
             if (Input.GetKey(down_key))
                 move += Vector2.down;
-
-            // Jump input
             if (Input.GetKey(jump_key))
                 jump_hold = true;
             if (Input.GetKeyDown(jump_key))
                 jump_press = true;
-
-            // Action input
             if (Input.GetKey(action_key))
                 action_hold = true;
             if (Input.GetKeyDown(action_key))
                 action_press = true;
 
-            // Normalize movement vector to ensure consistent speed
             float move_length = Mathf.Min(move.magnitude, 1f);
             move = move.normalized * move_length;
+
+            // Debugging
+            Debug.Log($"[PlayerControlsTwo] Player {player_id}: Move={move}, JumpPress={jump_press}, JumpHold={jump_hold}");
         }
 
-        // Public methods to access input states
+        //------ These functions should be called from the Update function, not FixedUpdate
         public Vector2 GetMove()
         {
             return move;
@@ -100,7 +97,8 @@ namespace IndieMarc.Platformer
             return action_hold;
         }
 
-        // Static methods for accessing controls by player ID
+        //-----------
+
         public static PlayerControlsTwo Get(int player_id)
         {
             if (controls.TryGetValue(player_id, out PlayerControlsTwo control))

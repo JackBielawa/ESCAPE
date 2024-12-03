@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 8085254380591112666}
   - component: {fileID: -1771780195214094570}
   - component: {fileID: -2652321071028021831}
+  - component: {fileID: 879561820430789004}
   m_Layer: 11
   m_Name: PowerUpTwo
   m_TagString: PowerUps
@@ -193,3 +194,17 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &879561820430789004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 198420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9cfd7db5f874407dbad6c52d76c2f84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bobSpeed: 2
+  bobHeight: 0.5

@@ -191,59 +191,55 @@ namespace IndieMarc.Platformer
 
         private void ShootFireball()
         {
-            Debug.Log("[ShootFireball] Called.");
-
             if (fireballPrefab != null && firePoint != null)
             {
-                // Instantiate the fireball at the fire point position
-                GameObject fireball = Instantiate(fireballPrefab, firePoint.position, firePoint.rotation);
-                Debug.Log("[ShootFireball] Fireball instantiated.");
+                // Determine the spawn position based on facing direction
+                Vector3 spawnPosition = transform.position + new Vector3(facingRight ? 0.5f : -0.5f, 0, 0);
 
-                // Get the Rigidbody2D component from the fireball
+                // Determine the rotation based on facing direction
+                Quaternion spawnRotation = facingRight ? Quaternion.identity : Quaternion.Euler(0, 180, 0);
+
+                // Instantiate the fireball with the correct position and rotation
+                GameObject fireball = Instantiate(fireballPrefab, spawnPosition, spawnRotation);
+
                 Rigidbody2D fireballRb = fireball.GetComponent<Rigidbody2D>();
                 if (fireballRb != null)
                 {
-                    // Determine the direction based on the player's facing direction
-                    Vector2 direction = GetFacing().normalized;
-
-                    // Set the velocity of the fireball
+                    // Set the velocity based on the facing direction
+                    Vector2 direction = facingRight ? Vector2.right : Vector2.left;
                     Fireball fireballScript = fireball.GetComponent<Fireball>();
                     float speed = fireballScript != null ? fireballScript.speed : 5f;
                     fireballRb.velocity = direction * speed;
-
-                    Debug.Log($"[ShootFireball] Fireball velocity set. Direction: {direction}, Speed: {speed}");
                 }
-                else
-                {
-                    Debug.LogWarning("[ShootFireball] Rigidbody2D component not found on the fireball prefab.");
-                }
-            }
-            else
-            {
-                if (fireballPrefab == null)
-                    Debug.LogWarning("[ShootFireball] fireballPrefab is not assigned.");
-                if (firePoint == null)
-                    Debug.LogWarning("[ShootFireball] firePoint is not assigned.");
             }
         }
+
+
+
 
         private void UpdateFacing()
         {
             if (Mathf.Abs(move.x) > 0.01f)
             {
+                // Determine the facing direction
                 facingRight = move.x > 0f;
                 float side = facingRight ? 1f : -1f;
+
+                // Flip the player scale
                 transform.localScale = new Vector3(start_scale.x * side, start_scale.y, start_scale.z);
 
-                // Adjust firePoint position based on facing direction
+                // Adjust the FirePoint's position
                 if (firePoint != null)
                 {
-                    firePoint.localPosition = new Vector3(facingRight ? 0.5f : -0.5f, 0, 0);
+                    firePoint.localPosition = new Vector3(facingRight ? 0.5f : -0.5f, firePoint.localPosition.y, firePoint.localPosition.z);
+                    firePoint.localRotation = Quaternion.Euler(0, facingRight ? 0 : 180, 0);
                 }
             }
-        }
+        
 
-        private void UpdateJump()
+    }
+
+    private void UpdateJump()
         {
             was_grounded = is_grounded;
 
