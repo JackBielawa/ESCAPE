@@ -75,7 +75,7 @@ namespace IndieMarc.Platformer
         private bool action_hold;
 
         private float hp;
-        private bool is_dead = false;
+        public bool is_dead = false;
         private bool was_grounded = false;
         private bool is_grounded = false;
         private bool is_crouch = false;
@@ -105,6 +105,9 @@ namespace IndieMarc.Platformer
 
         void Start()
         {
+
+            gameObject.SetActive(true);
+
             // If firePoint is not assigned, create it
             if (firePoint == null)
             {
@@ -115,6 +118,8 @@ namespace IndieMarc.Platformer
                 // Set initial position based on facing direction
                 firePoint.localPosition = new Vector3(0.5f, 0, 0);
             }
+
+            is_dead = false;
         }
 
         void OnDestroy()
@@ -454,6 +459,40 @@ namespace IndieMarc.Platformer
         {
             if (is_dead)
                 return;
+
+            if (collision.gameObject.CompareTag("LavaSquare"))
+            {
+                is_dead = true;
+                Debug.Log("Player1 hit the lavaSquare and is now dead.");
+            }
+            
+            if (collision.gameObject.CompareTag("Dragon"))
+            {
+                if (gameObject != null)
+                {
+                    gameObject.SetActive(false);
+                    UpdateDragonCount();
+                    Debug.Log("Player1 has been deactivated.");
+                }
+                else
+                {
+                    Debug.Log("Player1 could not be found.");
+                }
+
+            }
+        }
+
+        void UpdateDragonCount()
+        {
+            GameState gameState = FindObjectOfType<GameState>();
+            if (gameState != null)
+            {
+                gameState.dragonCount++;
+            }
+            else
+            {
+                Debug.LogError("GameState not found in the scene!");
+            }
         }
 
         public static PlayerCharacterOne GetNearest(Vector3 pos, float range = 99999f, bool alive_only = false)

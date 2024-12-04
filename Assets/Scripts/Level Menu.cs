@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 public class LevelMenu : MonoBehaviour
 {
     private int cookieCount;
+
+    public int unlockedCount;
     public GameObject level2Object;
     public GameObject level3Object;
     public GameObject level4Object;
@@ -13,6 +15,8 @@ public class LevelMenu : MonoBehaviour
     
     void Start()
     {
+
+        unlockedCount = 1;
         /*
         if (PlayerPrefs.HasKey("CookieCount"))
         {

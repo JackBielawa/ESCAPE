@@ -68,7 +68,7 @@ namespace IndieMarc.Platformer
         private bool action_hold;
 
         private float hp;
-        private bool is_dead = false;
+        public bool is_dead = false;
         private bool was_grounded = false;
         private bool is_grounded = false;
         private bool is_crouch = false;
@@ -118,8 +118,11 @@ namespace IndieMarc.Platformer
 
         void Start()
         {
+            gameObject.SetActive(true);
+
             // Additional startup debugging if needed
             Debug.Log($"[PlayerCharacterTwo] Start: Player ID {player_id}");
+            is_dead = false;
         }
 
         // Handle physics
@@ -473,8 +476,40 @@ namespace IndieMarc.Platformer
             if (is_dead)
                 return;
 
-            // Debugging
-            Debug.Log($"[OnCollisionEnter2D] Player {player_id}: Collided with {collision.collider.name} on layer {LayerMask.LayerToName(collision.collider.gameObject.layer)}");
+            if (collision.gameObject.CompareTag("LavaSquare"))
+            {
+                is_dead = true;
+                Debug.Log("Player2 hit the lavaSquare and is now dead.");
+            }
+
+            if (collision.gameObject.CompareTag("Dragon"))
+            {
+                if (gameObject != null)
+                {
+                    gameObject.SetActive(false);
+                    UpdateDragonCount();
+                    Debug.Log("Player2 has been deactivated.");
+                }
+                else
+                {
+                    Debug.Log("Player2 could not be found.");
+                }
+            }
+
+
+        }
+
+        void UpdateDragonCount()
+        {
+            GameState gameState = FindObjectOfType<GameState>();
+            if (gameState != null)
+            {
+                gameState.dragonCount++;
+            }
+            else
+            {
+                Debug.LogError("GameState not found in the scene!");
+            }
         }
 
         // New method to collect the power-up
