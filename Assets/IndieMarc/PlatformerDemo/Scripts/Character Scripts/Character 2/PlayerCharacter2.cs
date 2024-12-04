@@ -128,18 +128,23 @@ namespace IndieMarc.Platformer
             if (is_dead)
                 return;
 
-            // Movement velocity
-            float desiredSpeed = Mathf.Abs(move_input.x) > 0.1f ? move_input.x * move_max : 0f;
-            float acceleration = Mathf.Abs(move_input.x) > 0.1f ? move_accel : move_deccel;
-            acceleration = !is_grounded ? jump_move_percent * acceleration : acceleration;
-            move.x = Mathf.MoveTowards(move.x, desiredSpeed, acceleration * Time.fixedDeltaTime);
+            if (disable_controls)
+            {
+                // No movement when controls are disabled
+                move = Vector2.zero;
+            }
+            else
+            {
+                // Movement velocity
+                float desiredSpeed = Mathf.Abs(move_input.x) > 0.1f ? move_input.x * move_max : 0f;
+                float acceleration = Mathf.Abs(move_input.x) > 0.1f ? move_accel : move_deccel;
+                acceleration = !is_grounded ? jump_move_percent * acceleration : acceleration;
+                move.x = Mathf.MoveTowards(move.x, desiredSpeed, acceleration * Time.fixedDeltaTime);
 
-            // Debugging
-            Debug.Log($"[FixedUpdate] Player {player_id}: move_input.x: {move_input.x}, desiredSpeed: {desiredSpeed}, acceleration: {acceleration}, move.x: {move.x}");
-
-            UpdateFacing();
-            UpdateJump();
-            UpdateCrouch();
+                UpdateFacing();
+                UpdateJump();
+                UpdateCrouch();
+            }
 
             // Move
             rigid.velocity = move;
@@ -168,13 +173,19 @@ namespace IndieMarc.Platformer
             // Debugging
             Debug.Log($"[Update] Player {player_id}: move_input: {move_input}, jump_press: {jump_press}, jump_hold: {jump_hold}");
 
-            if (jump_press || move_input.y > 0.5f)
+            if (!disable_controls && (jump_press || move_input.y > 0.5f))
                 Jump();
 
             // Handle transformation
-            if (hasPowerUp && action_press)
+            if (hasPowerUp && controls.GetActionDown())
             {
                 ToggleForm();
+            }
+
+            // Keep rectangle at player's position
+            if (isRectangleForm && rectangleInstance != null)
+            {
+                rectangleInstance.transform.position = transform.position;
             }
 
             // Reset when fall
@@ -473,7 +484,7 @@ namespace IndieMarc.Platformer
             Debug.Log($"[CollectPowerUp] Player {player_id}: Power-up collected.");
         }
 
-        // New method to toggle between forms
+        // Updated method to toggle between forms
         private void ToggleForm()
         {
             isRectangleForm = !isRectangleForm;
@@ -483,15 +494,16 @@ namespace IndieMarc.Platformer
                 // Switch to rectangle form
                 if (rectangleInstance == null)
                 {
-                    rectangleInstance = Instantiate(rectanglePrefab, transform);
-                    rectangleInstance.transform.localPosition = Vector3.zero;
+                    rectangleInstance = Instantiate(rectanglePrefab);
+                    rectangleInstance.transform.position = transform.position;
 
-                    // Get rectangle collider size and offset
+                    // Disable rectangle's own collider to avoid conflicts
                     BoxCollider2D rectCollider = rectangleInstance.GetComponent<BoxCollider2D>();
                     if (rectCollider != null)
                     {
                         rectangleColliderSize = rectCollider.size;
                         rectangleColliderOffset = rectCollider.offset;
+                        rectCollider.enabled = false;
                     }
                     else
                     {
@@ -499,12 +511,12 @@ namespace IndieMarc.Platformer
                         rectangleColliderSize = originalColliderSize;
                         rectangleColliderOffset = originalColliderOffset;
                     }
-
-                    // Disable rectangle's own collider to avoid conflicts
-                    if (rectCollider != null)
-                        rectCollider.enabled = false;
                 }
-                rectangleInstance.SetActive(true);
+                else
+                {
+                    rectangleInstance.SetActive(true);
+                    rectangleInstance.transform.position = transform.position;
+                }
 
                 // Disable player's visual components
                 GetComponent<SpriteRenderer>().enabled = false;
@@ -512,6 +524,12 @@ namespace IndieMarc.Platformer
                 // Adjust collider size
                 box_coll.size = rectangleColliderSize;
                 box_coll.offset = rectangleColliderOffset;
+
+                // Disable player controls
+                disable_controls = true;
+
+                // Freeze player position
+                rigid.bodyType = RigidbodyType2D.Static;
 
                 Debug.Log($"[ToggleForm] Player {player_id}: Transformed into rectangle.");
             }
@@ -528,6 +546,12 @@ namespace IndieMarc.Platformer
                 // Restore collider size
                 box_coll.size = originalColliderSize;
                 box_coll.offset = originalColliderOffset;
+
+                // Enable player controls
+                disable_controls = false;
+
+                // Unfreeze player position
+                rigid.bodyType = RigidbodyType2D.Dynamic;
 
                 Debug.Log($"[ToggleForm] Player {player_id}: Reverted to normal form.");
             }
