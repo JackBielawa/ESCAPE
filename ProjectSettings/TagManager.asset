@@ -9,6 +9,7 @@ TagManager:
   - PowerUps
   - PowerUpTwo
   - PlayerTwo
+  - LavaSquare
   layers:
   - Default
   - TransparentFX
