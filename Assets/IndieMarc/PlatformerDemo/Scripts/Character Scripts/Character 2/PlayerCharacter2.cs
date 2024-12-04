@@ -68,7 +68,7 @@ namespace IndieMarc.Platformer
         private bool action_hold;
 
         private float hp;
-        private bool is_dead = false;
+        public bool is_dead = false;
         private bool was_grounded = false;
         private bool is_grounded = false;
         private bool is_crouch = false;
@@ -120,6 +120,7 @@ namespace IndieMarc.Platformer
         {
             // Additional startup debugging if needed
             Debug.Log($"[PlayerCharacterTwo] Start: Player ID {player_id}");
+            is_dead = false;
         }
 
         // Handle physics

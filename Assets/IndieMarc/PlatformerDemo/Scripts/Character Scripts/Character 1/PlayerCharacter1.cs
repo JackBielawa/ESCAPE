@@ -75,7 +75,7 @@ namespace IndieMarc.Platformer
         private bool action_hold;
 
         private float hp;
-        private bool is_dead = false;
+        public bool is_dead = false;
         private bool was_grounded = false;
         private bool is_grounded = false;
         private bool is_crouch = false;
@@ -115,6 +115,8 @@ namespace IndieMarc.Platformer
                 // Set initial position based on facing direction
                 firePoint.localPosition = new Vector3(0.5f, 0, 0);
             }
+
+            is_dead = false;
         }
 
         void OnDestroy()
