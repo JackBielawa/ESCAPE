@@ -14,17 +14,21 @@ public class GameState : MonoBehaviour
     private PlayerCharacterOne player1;
     private PlayerCharacterTwo player2;
 
+    public int dragonCount;
+
     private bool player1dead = false;
     private bool player2dead = false;
 
     private bool gameOver = false;
 
     public Image gameOverOverlay;
+    public Image levelCompleteOverlay;
     public float fadeSpeed = 0.5f;
 
     private Color overlayColor;
     private float maxAlpha = 120f / 255f;
     public TextMeshProUGUI gameOverTextTMP;
+    public TextMeshProUGUI levelCompleteTextTMP;
     private Color textColor;
 
     // Start is called before the first frame update
@@ -33,15 +37,9 @@ public class GameState : MonoBehaviour
         player1 = GameObject.Find("Player1")?.GetComponent<PlayerCharacterOne>();
         player2 = GameObject.Find("Player2")?.GetComponent<PlayerCharacterTwo>();
 
-        if (gameOverOverlay != null)
-            overlayColor = gameOverOverlay.color;
+        dragonCount = 0;
+        gameOver = false;
 
-        if (gameOverTextTMP != null)
-        {
-            textColor = gameOverTextTMP.color;
-            textColor.a = 0; // Ensure it's fully transparent
-            gameOverTextTMP.color = textColor; // Apply initial transparency
-        }
     }
 
     // Update is called once per frame
@@ -65,9 +63,12 @@ public class GameState : MonoBehaviour
 
         if (gameOver)
         {
+                
+
             // Fade in the overlay
             if (gameOverOverlay != null)
             {
+                overlayColor = gameOverOverlay.color;
                 overlayColor.a = Mathf.Clamp(overlayColor.a + fadeSpeed * Time.deltaTime, 0, maxAlpha);
                 gameOverOverlay.color = overlayColor;
             }
@@ -75,6 +76,8 @@ public class GameState : MonoBehaviour
             // Fade in the Game Over text
             if (gameOverTextTMP != null)
             {
+                textColor = gameOverTextTMP.color;
+                textColor.a = 0;
                 textColor.a = Mathf.Clamp(textColor.a + 2 * fadeSpeed * Time.deltaTime, 0, 1); // Full visibility is alpha = 1
                 gameOverTextTMP.color = textColor;
             }
@@ -82,6 +85,28 @@ public class GameState : MonoBehaviour
             BackToLevelMenu();
 
             Debug.Log($"Game Over Text Alpha: {textColor.a}");
+        }
+
+        if(dragonCount == 2)
+        {
+            // Fade in the overlay
+            if (levelCompleteOverlay != null)
+            {
+                overlayColor = levelCompleteOverlay.color;
+                overlayColor.a = Mathf.Clamp(overlayColor.a + fadeSpeed * Time.deltaTime, 0, maxAlpha);
+                levelCompleteOverlay.color = overlayColor;
+            }
+
+            // Fade in the Game Over text
+            if (levelCompleteTextTMP != null)
+            {
+                textColor = levelCompleteTextTMP.color;
+                //textColor.a = 0;
+                textColor.a = Mathf.Clamp(textColor.a + 2 * fadeSpeed * Time.deltaTime, 0, 1); // Full visibility is alpha = 1
+                levelCompleteTextTMP.color = textColor;
+            }
+            //add to level completed count
+            BackToLevelMenu();
         }
 
 

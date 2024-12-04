@@ -471,12 +471,27 @@ namespace IndieMarc.Platformer
                 if (gameObject != null)
                 {
                     gameObject.SetActive(false);
+                    UpdateDragonCount();
                     Debug.Log("Player1 has been deactivated.");
                 }
                 else
                 {
                     Debug.Log("Player1 could not be found.");
                 }
+
+            }
+        }
+
+        void UpdateDragonCount()
+        {
+            GameState gameState = FindObjectOfType<GameState>();
+            if (gameState != null)
+            {
+                gameState.dragonCount++;
+            }
+            else
+            {
+                Debug.LogError("GameState not found in the scene!");
             }
         }
 

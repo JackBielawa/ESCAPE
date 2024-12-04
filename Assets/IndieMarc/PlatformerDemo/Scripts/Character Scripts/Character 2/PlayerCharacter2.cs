@@ -487,6 +487,7 @@ namespace IndieMarc.Platformer
                 if (gameObject != null)
                 {
                     gameObject.SetActive(false);
+                    UpdateDragonCount();
                     Debug.Log("Player2 has been deactivated.");
                 }
                 else
@@ -496,6 +497,19 @@ namespace IndieMarc.Platformer
             }
 
 
+        }
+
+        void UpdateDragonCount()
+        {
+            GameState gameState = FindObjectOfType<GameState>();
+            if (gameState != null)
+            {
+                gameState.dragonCount++;
+            }
+            else
+            {
+                Debug.LogError("GameState not found in the scene!");
+            }
         }
 
         // New method to collect the power-up
