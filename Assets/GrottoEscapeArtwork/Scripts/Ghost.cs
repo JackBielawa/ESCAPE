@@ -7,52 +7,54 @@ public class Ghost : MonoBehaviour
     public float moveSpeed = 1f; // Speed of floating
     public Transform PlayerCharacterOne; // Reference to the first player
     public Transform PlayerCharacterTwo; // Reference to the second player
-    public GameObject fireball; // Reference to the fireball prefab or object
 
     private Vector3 startPosition;
+    private GameState gameState; // Reference to the GameState script
+
+    private bool isImmuneToFireball = false; // Flag to prevent premature destruction by fireball
+    public float fireballImmunityDuration = 0.1f; // Duration of immunity to fireball
 
     void Start()
     {
-        startPosition = transform.position; // Save the initial position
+        startPosition = transform.position;
+        gameState = FindObjectOfType<GameState>(); // Find the GameState in the scene
         StartCoroutine(FloatRandomly());
+
+        // Start the temporary immunity to fireball
+        StartCoroutine(TemporaryImmunityToFireball());
     }
 
     void Update()
     {
-        // Check for collision with PlayerCharacterOne
+        // Check proximity to players
         if (PlayerCharacterOne != null && Vector3.Distance(transform.position, PlayerCharacterOne.position) < 0.5f)
         {
-            GameOver();
+            TriggerGameOver();
         }
 
-        // Check for collision with PlayerCharacterTwo
         if (PlayerCharacterTwo != null && Vector3.Distance(transform.position, PlayerCharacterTwo.position) < 0.5f)
         {
-            GameOver();
+            TriggerGameOver();
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    public void DestroySelf()
     {
-        // Check if the ghost collides with the fireball
-        if (collision.gameObject.CompareTag("Fire"))
-        {
-            Destroy(gameObject); // Destroy the ghost
-        }
+        Destroy(gameObject);
+        Debug.Log("[Ghost] Ghost destroyed.");
     }
 
-    private void GameOver()
+
+    private void TriggerGameOver()
     {
-        // Implement game-over logic (e.g., reload scene or stop the game)
-        Debug.Log("Game Over! Ghost made contact with a player.");
-        Time.timeScale = 0; // Stop the game
+        gameState?.TriggerGameOver(); // Notify GameState of game over
     }
 
     private IEnumerator FloatRandomly()
     {
         while (true)
         {
-            // Generate a random target position within the move range
+            // Move ghost randomly within the specified range
             Vector3 randomOffset = new Vector3(
                 Random.Range(-moveRange, moveRange),
                 Random.Range(-moveRange, moveRange),
@@ -61,15 +63,23 @@ public class Ghost : MonoBehaviour
 
             Vector3 targetPosition = startPosition + randomOffset;
 
-            // Move the ghost toward the target position
+            // Move towards the target position
             while (Vector3.Distance(transform.position, targetPosition) > 0.1f)
             {
                 transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
                 yield return null;
             }
 
-            // Wait for a short time before moving again
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(1f); // Pause before the next movement
         }
+    }
+
+    private IEnumerator TemporaryImmunityToFireball()
+    {
+        isImmuneToFireball = true; // Enable immunity
+        Debug.Log("Ghost is immune to fireball for a short time.");
+        yield return new WaitForSeconds(fireballImmunityDuration);
+        isImmuneToFireball = false; // Disable immunity
+        Debug.Log("Ghost is now vulnerable to fireball.");
     }
 }

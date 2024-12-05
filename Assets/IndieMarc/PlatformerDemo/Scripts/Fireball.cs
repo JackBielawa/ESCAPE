@@ -1,45 +1,36 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Fireball : MonoBehaviour
 {
-    public float speed = 12f; // Speed for the fireball
-    public float lifetime = 5f; // Time in seconds before the fireball is destroyed
+    public float speed = 12f; // Speed of the fireball
+    public float lifetime = 5f; // Time before the fireball is destroyed
 
     private Rigidbody2D rb;
 
     void Start()
     {
-        // Destroy the fireball after its lifetime expires
+        // Destroy the fireball after its lifetime
         Destroy(gameObject, lifetime);
 
         // Get the Rigidbody2D component
         rb = GetComponent<Rigidbody2D>();
 
-        // Ensure the fireball moves horizontally
+        // Set the fireball's velocity
         if (rb != null)
         {
-            rb.velocity = transform.right * speed; // Set the velocity of the Rigidbody2D
+            rb.velocity = transform.right * speed;
         }
     }
 
-    private void FixedUpdate()
+    void OnTriggerEnter2D(Collider2D other)
     {
-        // Optional: If Rigidbody2D is not used, move the fireball manually
-        if (rb == null)
+        Ghost ghost = other.GetComponent<Ghost>(); // Check if the collided object is a Ghost
+        if (ghost != null)
         {
-            transform.Translate(Vector3.right * speed * Time.fixedDeltaTime);
-        }
-    }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        // Handle collision with enemies or environment
-        if (collision.CompareTag("Enemy") || collision.CompareTag("Obstacle"))
-        {
-            // Destroy the fireball upon collision
-            Destroy(gameObject);
+            ghost.DestroySelf(); // Destroy the ghost
+            Destroy(gameObject); // Destroy the fireball
+            Debug.Log("[Fireball] Fireball destroyed the ghost.");
         }
     }
 }

@@ -163,14 +163,14 @@ namespace IndieMarc.Platformer
             action_hold = !disable_controls ? controls.GetActionHold() : false;
 
             // Debugging
-            Debug.Log($"[Update] can_shoot: {can_shoot}, action_press: {action_press}");
+            //Debug.Log($"[Update] can_shoot: {can_shoot}, action_press: {action_press}");
 
             if (jump_press)
                 Jump();
 
             if (can_shoot && action_press)
             {
-                Debug.Log("[Update] Attempting to shoot fireball.");
+                //Debug.Log("[Update] Attempting to shoot fireball.");
                 ShootFireball();
             }
 
@@ -185,13 +185,13 @@ namespace IndieMarc.Platformer
         public void EnableShooting()
         {
             can_shoot = true;
-            Debug.Log("[EnableShooting] Shooting enabled.");
+           // Debug.Log("[EnableShooting] Shooting enabled.");
         }
 
         public void DisableShooting()
         {
             can_shoot = false;
-            Debug.Log("[DisableShooting] Shooting disabled.");
+           // Debug.Log("[DisableShooting] Shooting disabled.");
         }
 
         private void ShootFireball()

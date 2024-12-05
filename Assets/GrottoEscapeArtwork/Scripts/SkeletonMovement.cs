@@ -11,6 +11,7 @@ namespace IndieMarc.Platformer
         private Animator animator;
         private Rigidbody2D rb;
         private BoxCollider2D boxCollider;
+        public int speed = 5;
 
         [Header("Movement Settings")]
         public float moveSpeed = 2f;

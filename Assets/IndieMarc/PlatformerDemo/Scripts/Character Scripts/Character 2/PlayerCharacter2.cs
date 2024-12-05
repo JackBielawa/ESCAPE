@@ -107,13 +107,13 @@ namespace IndieMarc.Platformer
             originalColliderOffset = box_coll.offset;
 
             // Debugging
-            Debug.Log($"[PlayerCharacterTwo] Awake: Player ID {player_id}, Start Position {transform.position}");
+           
         }
 
         void OnDestroy()
         {
             character_list.Remove(player_id);
-            Debug.Log($"[PlayerCharacterTwo] OnDestroy: Player ID {player_id} removed.");
+            
         }
 
         void Start()
@@ -121,7 +121,7 @@ namespace IndieMarc.Platformer
             gameObject.SetActive(true);
 
             // Additional startup debugging if needed
-            Debug.Log($"[PlayerCharacterTwo] Start: Player ID {player_id}");
+          
             is_dead = false;
         }
 
@@ -153,7 +153,7 @@ namespace IndieMarc.Platformer
             rigid.velocity = move;
 
             // Debugging
-            Debug.Log($"[FixedUpdate] Player {player_id}: Rigidbody velocity: {rigid.velocity}");
+           
         }
 
         // Handle render and controls
@@ -174,7 +174,7 @@ namespace IndieMarc.Platformer
             action_hold = !disable_controls ? controls.GetActionHold() : false;
 
             // Debugging
-            Debug.Log($"[Update] Player {player_id}: move_input: {move_input}, jump_press: {jump_press}, jump_hold: {jump_hold}");
+           
 
             if (!disable_controls && (jump_press || move_input.y > 0.5f))
                 Jump();
@@ -201,7 +201,6 @@ namespace IndieMarc.Platformer
                     Teleport(last_ground_pos);
 
                 // Debugging
-                Debug.Log($"[Update] Player {player_id} fell below fall_pos_y: {fall_pos_y}, Teleporting to last ground position: {last_ground_pos}");
             }
         }
 
@@ -213,22 +212,17 @@ namespace IndieMarc.Platformer
                 transform.localScale = new Vector3(start_scale.x * side, start_scale.y, start_scale.z);
 
                 // Debugging
-                Debug.Log($"[UpdateFacing] Player {player_id}: Facing direction changed. New localScale.x: {transform.localScale.x}");
+               
             }
         }
 
         private void UpdateJump()
         {
-            // Update the previous grounded state
-            was_grounded = is_grounded;
-
-            // Detect if the character is grounded
-            is_grounded = DetectGrounded();
 
             jump_timer += Time.fixedDeltaTime;
 
             // Debugging
-            Debug.Log($"[UpdateJump] Player {player_id}: was_grounded: {was_grounded}, is_grounded: {is_grounded}, is_jumping: {is_jumping}, jump_timer: {jump_timer}");
+          
 
             // Handle jump timing
             if (is_jumping && !jump_hold && jump_timer > jump_time_min)
@@ -244,7 +238,7 @@ namespace IndieMarc.Platformer
                 move.y = Mathf.MoveTowards(move.y, -move_max * 2f, gravity * Time.fixedDeltaTime);
 
                 // Debugging
-                Debug.Log($"[UpdateJump] Player {player_id}: In air. Applying gravity: {gravity}, move.y: {move.y}");
+               
             }
             else if (!is_jumping)
             {
@@ -252,7 +246,7 @@ namespace IndieMarc.Platformer
                 move.y = 0f;
 
                 // Debugging
-                Debug.Log($"[UpdateJump] Player {player_id}: Grounded. Resetting vertical movement.");
+               
             }
 
             if (!is_grounded)
@@ -274,7 +268,7 @@ namespace IndieMarc.Platformer
                 onLand?.Invoke();
 
                 // Debugging
-                Debug.Log($"[UpdateJump] Player {player_id}: Landed on ground.");
+               
             }
         }
 
@@ -297,7 +291,7 @@ namespace IndieMarc.Platformer
                     onCrouch?.Invoke();
 
                     // Debugging
-                    Debug.Log($"[UpdateCrouch] Player {player_id}: Started crouching.");
+                  
                 }
             }
             else
@@ -309,7 +303,7 @@ namespace IndieMarc.Platformer
                 if (was_crouch && !is_crouch)
                 {
                     // Debugging
-                    Debug.Log($"[UpdateCrouch] Player {player_id}: Stopped crouching.");
+                   
                 }
             }
         }
@@ -327,30 +321,11 @@ namespace IndieMarc.Platformer
                     onJump?.Invoke();
 
                     // Debugging
-                    Debug.Log($"[Jump] Player {player_id}: Jump initiated. is_double_jump: {is_double_jump}, move.y: {move.y}");
+                    
                 }
             }
         }
 
-        private bool DetectGrounded()
-        {
-            Vector2 position = rigid.position + box_coll.offset + Vector2.down * (box_coll.size.y / 2f);
-            float rayLength = ground_raycast_dist;
-
-            RaycastHit2D hit = Physics2D.Raycast(position, Vector2.down, rayLength, ground_layer);
-            Debug.DrawRay(position, Vector2.down * rayLength, Color.red);
-
-            if (hit.collider != null && hit.collider != box_coll && !hit.collider.isTrigger)
-            {
-                Debug.Log($"[DetectGrounded] Player {player_id}: Hit detected with {hit.collider.name} at point {hit.point}");
-                return true;
-            }
-            else
-            {
-                Debug.Log($"[DetectGrounded] Player {player_id}: No ground detected.");
-                return false;
-            }
-        }
 
         public void Teleport(Vector3 pos)
         {
@@ -359,7 +334,7 @@ namespace IndieMarc.Platformer
             is_jumping = false;
 
             // Debugging
-            Debug.Log($"[Teleport] Player {player_id}: Teleported to position {pos}");
+            
         }
 
         public void HealDamage(float heal)
@@ -370,7 +345,7 @@ namespace IndieMarc.Platformer
                 hp = Mathf.Min(hp, max_hp);
 
                 // Debugging
-                Debug.Log($"[HealDamage] Player {player_id}: Healed {heal} HP. Current HP: {hp}");
+               
             }
         }
 
@@ -382,7 +357,7 @@ namespace IndieMarc.Platformer
                 hit_timer = -1f;
 
                 // Debugging
-                Debug.Log($"[TakeDamage] Player {player_id}: Took {damage} damage. Current HP: {hp}");
+               
 
                 if (hp <= 0f)
                 {
@@ -407,7 +382,7 @@ namespace IndieMarc.Platformer
                 onDeath?.Invoke();
 
                 // Debugging
-                Debug.Log($"[Kill] Player {player_id}: Character has died.");
+               
 
                 // For debugging, respawn the character after a delay
                 StartCoroutine(RespawnCharacter());
@@ -423,7 +398,7 @@ namespace IndieMarc.Platformer
             EnableControls();
 
             // Debugging
-            Debug.Log($"[RespawnCharacter] Player {player_id}: Character has respawned.");
+           
         }
 
         public void DisableControls() { disable_controls = true; }
@@ -479,7 +454,6 @@ namespace IndieMarc.Platformer
             if (collision.gameObject.CompareTag("LavaSquare"))
             {
                 is_dead = true;
-                Debug.Log("Player2 hit the lavaSquare and is now dead.");
             }
 
             if (collision.gameObject.CompareTag("Dragon"))
@@ -488,11 +462,10 @@ namespace IndieMarc.Platformer
                 {
                     gameObject.SetActive(false);
                     UpdateDragonCount();
-                    Debug.Log("Player2 has been deactivated.");
                 }
                 else
                 {
-                    Debug.Log("Player2 could not be found.");
+                    
                 }
             }
 
@@ -506,17 +479,13 @@ namespace IndieMarc.Platformer
             {
                 gameState.dragonCount++;
             }
-            else
-            {
-                Debug.LogError("GameState not found in the scene!");
-            }
         }
 
         // New method to collect the power-up
         public void CollectPowerUp()
         {
             hasPowerUp = true;
-            Debug.Log($"[CollectPowerUp] Player {player_id}: Power-up collected.");
+            
         }
 
         // Updated method to toggle between forms
@@ -566,7 +535,7 @@ namespace IndieMarc.Platformer
                 // Freeze player position
                 rigid.bodyType = RigidbodyType2D.Static;
 
-                Debug.Log($"[ToggleForm] Player {player_id}: Transformed into rectangle.");
+               
             }
             else
             {
@@ -588,7 +557,7 @@ namespace IndieMarc.Platformer
                 // Unfreeze player position
                 rigid.bodyType = RigidbodyType2D.Dynamic;
 
-                Debug.Log($"[ToggleForm] Player {player_id}: Reverted to normal form.");
+                
             }
         }
 
