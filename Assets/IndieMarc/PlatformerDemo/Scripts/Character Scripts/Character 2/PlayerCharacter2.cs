@@ -75,8 +75,6 @@ namespace IndieMarc.Platformer
         private bool hasPowerUp = false;
         private bool isRectangleForm = false;
         private GameObject rectangleInstance;
-        private Vector2 originalColliderSize;
-        private Vector2 originalColliderOffset;
 
         private static Dictionary<int, PlayerCharacterTwo> character_list = new Dictionary<int, PlayerCharacterTwo>();
 
@@ -91,9 +89,6 @@ namespace IndieMarc.Platformer
             average_ground_pos = rigid.position;
             last_ground_pos = rigid.position;
             hp = max_hp;
-
-            originalColliderSize = box_coll.size;
-            originalColliderOffset = box_coll.offset;
         }
 
         void OnDestroy()
@@ -147,8 +142,10 @@ namespace IndieMarc.Platformer
             move_input = !disable_controls ? controls.GetMove() : Vector2.zero;
             jump_press = !disable_controls ? controls.GetJumpDown() : false;
             jump_hold = !disable_controls ? controls.GetJumpHold() : false;
-            action_press = !disable_controls ? controls.GetActionDown() : false;
-            action_hold = !disable_controls ? controls.GetActionHold() : false;
+
+            // Allow action_press even when controls are disabled
+            action_press = controls.GetActionDown();
+            action_hold = controls.GetActionHold();
 
             if (!disable_controls && jump_press)
                 Jump();
@@ -427,50 +424,116 @@ namespace IndieMarc.Platformer
 
             if (isRectangleForm)
             {
+                // **Transformation into rectangle form**
+
+                // Instantiate rectanglePrefab if not already instantiated
                 if (rectangleInstance == null)
                 {
                     rectangleInstance = Instantiate(rectanglePrefab);
-                    rectangleInstance.transform.position = rigid.position;
+                    rectangleInstance.name = "RectanglePlatform"; // For debugging purposes
+                }
+                else
+                {
+                    // Re-enable rectangleInstance
+                    rectangleInstance.SetActive(true);
+                }
 
-                    // Disable rectangle's collider to avoid conflicts
-                    Collider2D rectCollider = rectangleInstance.GetComponent<Collider2D>();
+                // Position rectangle at Player 2's position
+                rectangleInstance.transform.position = transform.position;
+
+                // Disable Player 2's collider and rigidbody
+                box_coll.enabled = false;
+                rigid.simulated = false;
+
+                // Enable rectangle's collider
+                BoxCollider2D rectCollider = rectangleInstance.GetComponent<BoxCollider2D>();
+                if (rectCollider == null)
+                {
+                    rectCollider = rectangleInstance.AddComponent<BoxCollider2D>();
+                }
+                rectCollider.enabled = true;
+                rectCollider.isTrigger = false;
+
+                // Ensure rectangle is on the "Platform" layer
+                int platformLayerIndex = LayerMask.NameToLayer("Platform");
+                if (platformLayerIndex == -1)
+                {
+                    Debug.LogError("Layer 'Platform' does not exist. Please add it in the Tags and Layers settings.");
+                }
+                else
+                {
+                    rectangleInstance.layer = platformLayerIndex;
+                }
+
+                // Add or get Rigidbody2D component and set it to Static
+                Rigidbody2D rectRigid = rectangleInstance.GetComponent<Rigidbody2D>();
+                if (rectRigid == null)
+                {
+                    rectRigid = rectangleInstance.AddComponent<Rigidbody2D>();
+                }
+                rectRigid.bodyType = RigidbodyType2D.Static;
+                rectRigid.simulated = true; // Ensure it's simulated
+
+                // Enable rectangleInstance's sprite renderer
+                SpriteRenderer rectSprite = rectangleInstance.GetComponent<SpriteRenderer>();
+                if (rectSprite != null)
+                {
+                    rectSprite.enabled = true;
+                }
+
+                // Hide Player 2's sprite
+                GetComponent<SpriteRenderer>().enabled = false;
+
+                // Disable Player 2's controls
+                disable_controls = true;
+            }
+            else
+            {
+                // **Reverting back to normal form**
+
+                // Re-enable Player 2's collider and rigidbody
+                box_coll.enabled = true;
+                rigid.simulated = true;
+
+                // Show Player 2's sprite
+                GetComponent<SpriteRenderer>().enabled = true;
+
+                // Disable rectangleInstance's components
+                if (rectangleInstance != null)
+                {
+                    // Disable rectangle's collider
+                    BoxCollider2D rectCollider = rectangleInstance.GetComponent<BoxCollider2D>();
                     if (rectCollider != null)
                     {
                         rectCollider.enabled = false;
                     }
+
+                    // Disable rectangle's rigidbody simulation
+                    Rigidbody2D rectRigid = rectangleInstance.GetComponent<Rigidbody2D>();
+                    if (rectRigid != null)
+                    {
+                        rectRigid.simulated = false;
+                    }
+
+                    // Disable rectangleInstance's sprite renderer
+                    SpriteRenderer rectSprite = rectangleInstance.GetComponent<SpriteRenderer>();
+                    if (rectSprite != null)
+                    {
+                        rectSprite.enabled = false;
+                    }
+
+                    // Optionally, keep rectangleInstance active to avoid issues with reactivation
+                    // rectangleInstance.SetActive(false); // Not necessary if components are disabled
                 }
-                else
-                {
-                    rectangleInstance.SetActive(true);
-                    rectangleInstance.transform.position = rigid.position;
-                }
 
-                GetComponent<SpriteRenderer>().enabled = false;
-
-                // Adjust collider size for rectangle form
-                box_coll.size = new Vector2(coll_start_size.x * 2f, coll_start_size.y * 0.5f);
-                box_coll.offset = new Vector2(coll_start_offset.x, coll_start_offset.y - coll_start_size.y * 0.25f);
-
-                disable_controls = false; // Allow movement in rectangle form
-
-                rigid.bodyType = RigidbodyType2D.Dynamic;
-            }
-            else
-            {
-                if (rectangleInstance != null)
-                {
-                    rectangleInstance.SetActive(false);
-                }
-                GetComponent<SpriteRenderer>().enabled = true;
-
-                box_coll.size = originalColliderSize;
-                box_coll.offset = originalColliderOffset;
-
+                // Re-enable Player 2's controls
                 disable_controls = false;
 
-                rigid.bodyType = RigidbodyType2D.Dynamic;
+                // Reposition Player 2 to the rectangle's position
+                transform.position = rectangleInstance.transform.position;
             }
         }
+
 
         public static PlayerCharacterTwo GetNearest(Vector3 pos, float range = 99999f, bool alive_only = false)
         {

@@ -103,7 +103,7 @@ Animator:
   m_Enabled: 1
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 5279d6c84667d634a8cae15c7ed54172, type: 2}
-  m_CullingMode: 2
+  m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
@@ -125,7 +125,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 10
+  m_Mass: 1
   m_LinearDrag: 1
   m_AngularDrag: 1
   m_GravityScale: 1
@@ -155,20 +155,15 @@ MonoBehaviour:
   player_id: 2
   max_hp: 100
   invulnerable: 0
-  move_accel: 5
-  move_deccel: 10
-  move_max: 4
+  move_accel: 27
+  move_deccel: 27
+  move_max: 27
   can_jump: 1
   double_jump: 0
-  jump_strength: 8
-  jump_time_min: 0.2
-  jump_time_max: 1.5
-  jump_gravity: 6
-  jump_fall_gravity: 7
-  jump_move_percent: 0.75
+  jump_strength: 10
   ground_layer:
     serializedVersion: 2
-    m_Bits: 2147483648
+    m_Bits: 2147487744
   ground_raycast_dist: 0.2
   can_crouch: 1
   crouch_coll_percent: 0.5
@@ -176,6 +171,7 @@ MonoBehaviour:
   fall_pos_y: -5
   fall_damage_percent: 0.25
   rectanglePrefab: {fileID: 130892, guid: 37927db1c3ea24c9e8facb1b802b983f, type: 3}
+  is_dead: 0
 --- !u!114 &-5181204182174940916
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -252,7 +248,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.00197196, y: 0.010519803}
+  m_Offset: {x: -0.00197196, y: 0.01643616}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -263,7 +259,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.6932864, y: 1.4525253}
+  m_Size: {x: 0.6932864, y: 1.4406925}
   m_EdgeRadius: 0
 --- !u!1 &1872324591488810
 GameObject:
