@@ -157,12 +157,12 @@ MonoBehaviour:
   player_id: 1
   max_hp: 100
   invulnerable: 0
-  move_accel: 27
-  move_deccel: 27
-  move_max: 27
+  move_accel: 30
+  move_deccel: 30
+  move_max: 30
   can_jump: 1
   double_jump: 0
-  jump_strength: 10
+  jump_strength: 12
   ground_layer:
     serializedVersion: 2
     m_Bits: 2147487744
