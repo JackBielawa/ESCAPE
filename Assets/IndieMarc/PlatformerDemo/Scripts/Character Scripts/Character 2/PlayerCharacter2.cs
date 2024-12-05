@@ -25,12 +25,7 @@ namespace IndieMarc.Platformer
         [Header("Jump")]
         public bool can_jump = true;
         public bool double_jump = true;
-        public float jump_strength = 5f;
-        public float jump_time_min = 0.1f;
-        public float jump_time_max = 0.5f;
-        public float jump_gravity = 1f;
-        public float jump_fall_gravity = 2f;
-        public float jump_move_percent = 0.75f;
+        public float jump_strength = 10f; // Increased jump strength for better upward flow
         public LayerMask ground_layer;
         public float ground_raycast_dist = 0.1f;
 
@@ -75,7 +70,6 @@ namespace IndieMarc.Platformer
         private bool is_double_jump = false;
         private bool disable_controls = false;
         private float grounded_timer = 0f;
-        private float jump_timer = 0f;
         private float hit_timer = 0f;
 
         private bool hasPowerUp = false;
@@ -83,8 +77,6 @@ namespace IndieMarc.Platformer
         private GameObject rectangleInstance;
         private Vector2 originalColliderSize;
         private Vector2 originalColliderOffset;
-        private Vector2 rectangleColliderSize;
-        private Vector2 rectangleColliderOffset;
 
         private static Dictionary<int, PlayerCharacterTwo> character_list = new Dictionary<int, PlayerCharacterTwo>();
 
@@ -130,9 +122,9 @@ namespace IndieMarc.Platformer
                 float targetSpeed = move_input.x * move_max;
                 float speedDiff = targetSpeed - rigid.velocity.x;
                 float accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? move_accel : move_deccel;
-                accelRate = !is_grounded ? jump_move_percent * accelRate : accelRate;
+                accelRate = !is_grounded ? accelRate * 0.5f : accelRate; // Reduced air control
 
-                float movement = speedDiff * accelRate;
+                float movement = speedDiff * accelRate * Time.fixedDeltaTime; // Adjusted for frame rate
 
                 rigid.AddForce(new Vector2(movement, 0));
 
@@ -158,19 +150,13 @@ namespace IndieMarc.Platformer
             action_press = !disable_controls ? controls.GetActionDown() : false;
             action_hold = !disable_controls ? controls.GetActionHold() : false;
 
-            if (!disable_controls && (jump_press || move_input.y > 0.5f))
+            if (!disable_controls && jump_press)
                 Jump();
 
             // Handle transformation
             if (hasPowerUp && action_press)
             {
                 ToggleForm();
-            }
-
-            // Keep rectangle at player's position
-            if (isRectangleForm && rectangleInstance != null)
-            {
-                rectangleInstance.transform.position = rigid.position;
             }
 
             // Reset when falling below a certain point
@@ -194,39 +180,41 @@ namespace IndieMarc.Platformer
         {
             was_grounded = is_grounded;
 
+            // Detect if the character is grounded
             is_grounded = DetectGrounded();
 
-            jump_timer += Time.fixedDeltaTime;
-
-            if (is_jumping && !jump_hold && jump_timer > jump_time_min)
-                is_jumping = false;
-            if (is_jumping && jump_timer > jump_time_max)
-                is_jumping = false;
-
-            if (rigid.velocity.y > 0 && !jump_hold)
+            // Reset jump variables when grounded
+            if (is_grounded)
             {
-                rigid.gravityScale = jump_gravity;
+                is_jumping = false;
+                is_double_jump = false;
             }
-            else if (rigid.velocity.y < 0)
+
+            // Adjust gravity for smoother jump
+            if (rigid.velocity.y > 0.1f && !jump_hold)
             {
-                rigid.gravityScale = jump_fall_gravity;
+                // Apply higher gravity when player releases jump early
+                rigid.gravityScale = 3f;
+            }
+            else if (rigid.velocity.y < -0.1f)
+            {
+                // Apply higher gravity when falling
+                rigid.gravityScale = 3f;
             }
             else
             {
+                // Normal gravity
                 rigid.gravityScale = 1f;
             }
 
-            if (!is_grounded)
-                grounded_timer = 0f;
-
-            if (!was_grounded && is_grounded)
-                average_ground_pos = rigid.position;
+            // Update grounded position and save the last valid grounded position
             if (is_grounded)
-                average_ground_pos = Vector2.Lerp(rigid.position, average_ground_pos, 1f * Time.deltaTime);
-
-            if (is_grounded && grounded_timer > 1f)
+            {
+                average_ground_pos = Vector2.Lerp(rigid.position, average_ground_pos, 0.5f);
                 last_ground_pos = average_ground_pos;
+            }
 
+            // Trigger landing event
             if (!was_grounded && is_grounded)
             {
                 onLand?.Invoke();
@@ -258,16 +246,22 @@ namespace IndieMarc.Platformer
             }
         }
 
-        public void Jump(bool force_jump = false)
+        public void Jump()
         {
-            if (can_jump && (!is_crouch || force_jump))
+            if (can_jump && !is_crouch)
             {
-                if (is_grounded || force_jump || (!is_double_jump && double_jump))
+                if (is_grounded)
                 {
-                    is_double_jump = !is_grounded;
-                    rigid.AddForce(new Vector2(0f, jump_strength), ForceMode2D.Impulse);
-                    jump_timer = 0f;
+                    // First jump
+                    rigid.velocity = new Vector2(rigid.velocity.x, jump_strength);
                     is_jumping = true;
+                    onJump?.Invoke();
+                }
+                else if (double_jump && !is_double_jump)
+                {
+                    // Double jump
+                    rigid.velocity = new Vector2(rigid.velocity.x, jump_strength);
+                    is_double_jump = true;
                     onJump?.Invoke();
                 }
             }
@@ -280,7 +274,6 @@ namespace IndieMarc.Platformer
             float distance = (box_coll.size.y / 2f) + ground_raycast_dist;
 
             RaycastHit2D hit = Physics2D.Raycast(position, direction, distance, ground_layer);
-            Debug.DrawRay(position, direction * distance, Color.red);
 
             if (hit.collider != null && hit.collider != box_coll && !hit.collider.isTrigger)
             {
@@ -439,17 +432,11 @@ namespace IndieMarc.Platformer
                     rectangleInstance = Instantiate(rectanglePrefab);
                     rectangleInstance.transform.position = rigid.position;
 
-                    BoxCollider2D rectCollider = rectangleInstance.GetComponent<BoxCollider2D>();
+                    // Disable rectangle's collider to avoid conflicts
+                    Collider2D rectCollider = rectangleInstance.GetComponent<Collider2D>();
                     if (rectCollider != null)
                     {
-                        rectangleColliderSize = rectCollider.size;
-                        rectangleColliderOffset = rectCollider.offset;
                         rectCollider.enabled = false;
-                    }
-                    else
-                    {
-                        rectangleColliderSize = originalColliderSize;
-                        rectangleColliderOffset = originalColliderOffset;
                     }
                 }
                 else
@@ -460,12 +447,13 @@ namespace IndieMarc.Platformer
 
                 GetComponent<SpriteRenderer>().enabled = false;
 
-                box_coll.size = rectangleColliderSize;
-                box_coll.offset = rectangleColliderOffset;
+                // Adjust collider size for rectangle form
+                box_coll.size = new Vector2(coll_start_size.x * 2f, coll_start_size.y * 0.5f);
+                box_coll.offset = new Vector2(coll_start_offset.x, coll_start_offset.y - coll_start_size.y * 0.25f);
 
-                disable_controls = true;
+                disable_controls = false; // Allow movement in rectangle form
 
-                rigid.bodyType = RigidbodyType2D.Static;
+                rigid.bodyType = RigidbodyType2D.Dynamic;
             }
             else
             {
