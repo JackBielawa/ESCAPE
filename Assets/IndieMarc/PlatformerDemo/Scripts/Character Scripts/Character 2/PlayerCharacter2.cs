@@ -18,14 +18,14 @@ namespace IndieMarc.Platformer
         public bool invulnerable = false;
 
         [Header("Movement")]
-        public float move_accel = 1f;
-        public float move_deccel = 1f;
-        public float move_max = 1f;
+        public float move_accel = 50f; // Increased acceleration
+        public float move_deccel = 50f; // Increased deceleration
+        public float move_max = 5f;
 
         [Header("Jump")]
         public bool can_jump = true;
         public bool double_jump = true;
-        public float jump_strength = 1f;
+        public float jump_strength = 5f;
         public float jump_time_min = 0.1f;
         public float jump_time_max = 0.5f;
         public float jump_gravity = 1f;
@@ -44,7 +44,7 @@ namespace IndieMarc.Platformer
         public float fall_damage_percent = 0.25f;
 
         [Header("Transformation")]
-        public GameObject rectanglePrefab; // Assign your Rectangle prefab here
+        public GameObject rectanglePrefab;
 
         public UnityAction onDeath;
         public UnityAction onHit;
@@ -60,7 +60,6 @@ namespace IndieMarc.Platformer
         private Vector3 last_ground_pos;
         private Vector3 average_ground_pos;
 
-        private Vector2 move;
         private Vector2 move_input;
         private bool jump_press;
         private bool jump_hold;
@@ -79,7 +78,6 @@ namespace IndieMarc.Platformer
         private float jump_timer = 0f;
         private float hit_timer = 0f;
 
-        // New variables for power-up and transformation
         private bool hasPowerUp = false;
         private bool isRectangleForm = false;
         private GameObject rectangleInstance;
@@ -98,34 +96,25 @@ namespace IndieMarc.Platformer
             coll_start_size = box_coll.size;
             coll_start_offset = box_coll.offset;
             start_scale = transform.localScale;
-            average_ground_pos = transform.position;
-            last_ground_pos = transform.position;
+            average_ground_pos = rigid.position;
+            last_ground_pos = rigid.position;
             hp = max_hp;
 
-            // Store original collider size and offset
             originalColliderSize = box_coll.size;
             originalColliderOffset = box_coll.offset;
-
-            // Debugging
-           
         }
 
         void OnDestroy()
         {
             character_list.Remove(player_id);
-            
         }
 
         void Start()
         {
             gameObject.SetActive(true);
-
-            // Additional startup debugging if needed
-          
             is_dead = false;
         }
 
-        // Handle physics
         void FixedUpdate()
         {
             if (is_dead)
@@ -133,30 +122,26 @@ namespace IndieMarc.Platformer
 
             if (disable_controls)
             {
-                // No movement when controls are disabled
-                move = Vector2.zero;
+                rigid.velocity = new Vector2(0f, rigid.velocity.y);
             }
             else
             {
-                // Movement velocity
-                float desiredSpeed = Mathf.Abs(move_input.x) > 0.1f ? move_input.x * move_max : 0f;
-                float acceleration = Mathf.Abs(move_input.x) > 0.1f ? move_accel : move_deccel;
-                acceleration = !is_grounded ? jump_move_percent * acceleration : acceleration;
-                move.x = Mathf.MoveTowards(move.x, desiredSpeed, acceleration * Time.fixedDeltaTime);
+                // Apply horizontal movement
+                float targetSpeed = move_input.x * move_max;
+                float speedDiff = targetSpeed - rigid.velocity.x;
+                float accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? move_accel : move_deccel;
+                accelRate = !is_grounded ? jump_move_percent * accelRate : accelRate;
+
+                float movement = speedDiff * accelRate;
+
+                rigid.AddForce(new Vector2(movement, 0));
 
                 UpdateFacing();
                 UpdateJump();
                 UpdateCrouch();
             }
-
-            // Move
-            rigid.velocity = move;
-
-            // Debugging
-           
         }
 
-        // Handle render and controls
         void Update()
         {
             if (is_dead)
@@ -173,14 +158,11 @@ namespace IndieMarc.Platformer
             action_press = !disable_controls ? controls.GetActionDown() : false;
             action_hold = !disable_controls ? controls.GetActionHold() : false;
 
-            // Debugging
-           
-
             if (!disable_controls && (jump_press || move_input.y > 0.5f))
                 Jump();
 
             // Handle transformation
-            if (hasPowerUp && controls.GetActionDown())
+            if (hasPowerUp && action_press)
             {
                 ToggleForm();
             }
@@ -188,87 +170,66 @@ namespace IndieMarc.Platformer
             // Keep rectangle at player's position
             if (isRectangleForm && rectangleInstance != null)
             {
-                rectangleInstance.transform.position = transform.position;
+                rectangleInstance.transform.position = rigid.position;
             }
 
-            // Reset when fall
-            if (transform.position.y < fall_pos_y - GetSize().y)
+            // Reset when falling below a certain point
+            if (rigid.position.y < fall_pos_y - GetSize().y)
             {
-                // For debugging, you can comment out the damage and death to prevent character from dying
-                // TakeDamage(max_hp * fall_damage_percent);
-
                 if (reset_when_fall)
                     Teleport(last_ground_pos);
-
-                // Debugging
             }
         }
 
         private void UpdateFacing()
         {
-            if (Mathf.Abs(move.x) > 0.01f)
+            if (Mathf.Abs(move_input.x) > 0.01f)
             {
-                float side = (move.x < 0f) ? -1f : 1f;
+                float side = (move_input.x < 0f) ? -1f : 1f;
                 transform.localScale = new Vector3(start_scale.x * side, start_scale.y, start_scale.z);
-
-                // Debugging
-               
             }
         }
 
         private void UpdateJump()
         {
+            was_grounded = is_grounded;
+
+            is_grounded = DetectGrounded();
 
             jump_timer += Time.fixedDeltaTime;
 
-            // Debugging
-          
-
-            // Handle jump timing
             if (is_jumping && !jump_hold && jump_timer > jump_time_min)
                 is_jumping = false;
             if (is_jumping && jump_timer > jump_time_max)
                 is_jumping = false;
 
-            // Apply gravity and vertical movement
-            if (!is_grounded)
+            if (rigid.velocity.y > 0 && !jump_hold)
             {
-                // Character is in the air
-                float gravity = !is_jumping ? jump_fall_gravity : jump_gravity; // Adjust gravity based on jumping state
-                move.y = Mathf.MoveTowards(move.y, -move_max * 2f, gravity * Time.fixedDeltaTime);
-
-                // Debugging
-               
+                rigid.gravityScale = jump_gravity;
             }
-            else if (!is_jumping)
+            else if (rigid.velocity.y < 0)
             {
-                // Character is on the ground and not jumping
-                move.y = 0f;
-
-                // Debugging
-               
+                rigid.gravityScale = jump_fall_gravity;
+            }
+            else
+            {
+                rigid.gravityScale = 1f;
             }
 
             if (!is_grounded)
                 grounded_timer = 0f;
 
-            // Update grounded position
             if (!was_grounded && is_grounded)
-                average_ground_pos = transform.position;
+                average_ground_pos = rigid.position;
             if (is_grounded)
-                average_ground_pos = Vector3.Lerp(transform.position, average_ground_pos, 1f * Time.deltaTime);
+                average_ground_pos = Vector2.Lerp(rigid.position, average_ground_pos, 1f * Time.deltaTime);
 
-            // Save last landed position
             if (is_grounded && grounded_timer > 1f)
                 last_ground_pos = average_ground_pos;
 
-            // Handle landing event
             if (!was_grounded && is_grounded)
             {
                 onLand?.Invoke();
-
-                // Debugging
-               
             }
         }
 
@@ -277,21 +238,16 @@ namespace IndieMarc.Platformer
             if (!can_crouch)
                 return;
 
-            // Crouch
             bool was_crouch = is_crouch;
             if (move_input.y < -0.1f && is_grounded)
             {
                 is_crouch = true;
-                move = Vector2.zero;
                 box_coll.size = new Vector2(coll_start_size.x, coll_start_size.y * crouch_coll_percent);
                 box_coll.offset = new Vector2(coll_start_offset.x, coll_start_offset.y - coll_start_size.y * (1f - crouch_coll_percent) / 2f);
 
                 if (!was_crouch && is_crouch)
                 {
                     onCrouch?.Invoke();
-
-                    // Debugging
-                  
                 }
             }
             else
@@ -299,12 +255,6 @@ namespace IndieMarc.Platformer
                 is_crouch = false;
                 box_coll.size = coll_start_size;
                 box_coll.offset = coll_start_offset;
-
-                if (was_crouch && !is_crouch)
-                {
-                    // Debugging
-                   
-                }
             }
         }
 
@@ -315,26 +265,38 @@ namespace IndieMarc.Platformer
                 if (is_grounded || force_jump || (!is_double_jump && double_jump))
                 {
                     is_double_jump = !is_grounded;
-                    move.y = jump_strength;
+                    rigid.AddForce(new Vector2(0f, jump_strength), ForceMode2D.Impulse);
                     jump_timer = 0f;
                     is_jumping = true;
                     onJump?.Invoke();
-
-                    // Debugging
-                    
                 }
             }
         }
 
+        private bool DetectGrounded()
+        {
+            Vector2 position = rigid.position + box_coll.offset;
+            Vector2 direction = Vector2.down;
+            float distance = (box_coll.size.y / 2f) + ground_raycast_dist;
+
+            RaycastHit2D hit = Physics2D.Raycast(position, direction, distance, ground_layer);
+            Debug.DrawRay(position, direction * distance, Color.red);
+
+            if (hit.collider != null && hit.collider != box_coll && !hit.collider.isTrigger)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
         public void Teleport(Vector3 pos)
         {
-            transform.position = pos;
-            move = Vector2.zero;
+            rigid.position = pos;
+            rigid.velocity = Vector2.zero;
             is_jumping = false;
-
-            // Debugging
-            
         }
 
         public void HealDamage(float heal)
@@ -343,9 +305,6 @@ namespace IndieMarc.Platformer
             {
                 hp += heal;
                 hp = Mathf.Min(hp, max_hp);
-
-                // Debugging
-               
             }
         }
 
@@ -355,9 +314,6 @@ namespace IndieMarc.Platformer
             {
                 hp -= damage;
                 hit_timer = -1f;
-
-                // Debugging
-               
 
                 if (hp <= 0f)
                 {
@@ -376,29 +332,21 @@ namespace IndieMarc.Platformer
             {
                 is_dead = true;
                 rigid.velocity = Vector2.zero;
-                move = Vector2.zero;
                 move_input = Vector2.zero;
 
                 onDeath?.Invoke();
 
-                // Debugging
-               
-
-                // For debugging, respawn the character after a delay
                 StartCoroutine(RespawnCharacter());
             }
         }
 
         private IEnumerator RespawnCharacter()
         {
-            yield return new WaitForSeconds(2f); // Wait for 2 seconds
+            yield return new WaitForSeconds(2f);
             is_dead = false;
             hp = max_hp;
             Teleport(last_ground_pos);
             EnableControls();
-
-            // Debugging
-           
         }
 
         public void DisableControls() { disable_controls = true; }
@@ -406,7 +354,7 @@ namespace IndieMarc.Platformer
 
         public Vector2 GetMove()
         {
-            return move;
+            return rigid.velocity;
         }
 
         public Vector2 GetFacing()
@@ -463,13 +411,7 @@ namespace IndieMarc.Platformer
                     gameObject.SetActive(false);
                     UpdateDragonCount();
                 }
-                else
-                {
-                    
-                }
             }
-
-
         }
 
         void UpdateDragonCount()
@@ -481,27 +423,22 @@ namespace IndieMarc.Platformer
             }
         }
 
-        // New method to collect the power-up
         public void CollectPowerUp()
         {
             hasPowerUp = true;
-            
         }
 
-        // Updated method to toggle between forms
         private void ToggleForm()
         {
             isRectangleForm = !isRectangleForm;
 
             if (isRectangleForm)
             {
-                // Switch to rectangle form
                 if (rectangleInstance == null)
                 {
                     rectangleInstance = Instantiate(rectanglePrefab);
-                    rectangleInstance.transform.position = transform.position;
+                    rectangleInstance.transform.position = rigid.position;
 
-                    // Disable rectangle's own collider to avoid conflicts
                     BoxCollider2D rectCollider = rectangleInstance.GetComponent<BoxCollider2D>();
                     if (rectCollider != null)
                     {
@@ -511,7 +448,6 @@ namespace IndieMarc.Platformer
                     }
                     else
                     {
-                        // Set default values if collider not found
                         rectangleColliderSize = originalColliderSize;
                         rectangleColliderOffset = originalColliderOffset;
                     }
@@ -519,45 +455,32 @@ namespace IndieMarc.Platformer
                 else
                 {
                     rectangleInstance.SetActive(true);
-                    rectangleInstance.transform.position = transform.position;
+                    rectangleInstance.transform.position = rigid.position;
                 }
 
-                // Disable player's visual components
                 GetComponent<SpriteRenderer>().enabled = false;
 
-                // Adjust collider size
                 box_coll.size = rectangleColliderSize;
                 box_coll.offset = rectangleColliderOffset;
 
-                // Disable player controls
                 disable_controls = true;
 
-                // Freeze player position
                 rigid.bodyType = RigidbodyType2D.Static;
-
-               
             }
             else
             {
-                // Switch to normal form
                 if (rectangleInstance != null)
                 {
                     rectangleInstance.SetActive(false);
                 }
-                // Enable player's visual components
                 GetComponent<SpriteRenderer>().enabled = true;
 
-                // Restore collider size
                 box_coll.size = originalColliderSize;
                 box_coll.offset = originalColliderOffset;
 
-                // Enable player controls
                 disable_controls = false;
 
-                // Unfreeze player position
                 rigid.bodyType = RigidbodyType2D.Dynamic;
-
-                
             }
         }
 

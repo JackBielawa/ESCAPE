@@ -3,11 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-/// <summary>
-/// Platformer character movement
-/// Author: Indie Marc (Marc-Antoine Desbiens)
-/// </summary>
-
 namespace IndieMarc.Platformer
 {
     [RequireComponent(typeof(Rigidbody2D))]
@@ -23,14 +18,14 @@ namespace IndieMarc.Platformer
         public bool invulnerable = false;
 
         [Header("Movement")]
-        public float move_accel = 1f;
-        public float move_deccel = 1f;
-        public float move_max = 1f;
+        public float move_accel = 50f; // Increased acceleration
+        public float move_deccel = 50f; // Increased deceleration
+        public float move_max = 5f;
 
         [Header("Jump")]
         public bool can_jump = true;
         public bool double_jump = true;
-        public float jump_strength = 1f;
+        public float jump_strength = 5f;
         public float jump_time_min = 0.1f;
         public float jump_time_max = 0.5f;
         public float jump_gravity = 1f;
@@ -49,9 +44,9 @@ namespace IndieMarc.Platformer
         public float fall_damage_percent = 0.25f;
 
         [Header("Shooting")]
-        public bool can_shoot = false; // Indicates if the player can shoot
-        public GameObject fireballPrefab; // Assign the fireball prefab in the Inspector
-        public Transform firePoint; // The point from where the fireball will be instantiated
+        public bool can_shoot = false;
+        public GameObject fireballPrefab;
+        public Transform firePoint;
 
         public UnityAction onDeath;
         public UnityAction onHit;
@@ -67,7 +62,6 @@ namespace IndieMarc.Platformer
         private Vector3 last_ground_pos;
         private Vector3 average_ground_pos;
 
-        private Vector2 move;
         private Vector2 move_input;
         private bool jump_press;
         private bool jump_hold;
@@ -86,7 +80,7 @@ namespace IndieMarc.Platformer
         private float jump_timer = 0f;
         private float hit_timer = 0f;
 
-        private bool facingRight = true; // Indicates if the player is facing right
+        private bool facingRight = true;
 
         private static Dictionary<int, PlayerCharacterOne> character_list = new Dictionary<int, PlayerCharacterOne>();
 
@@ -98,24 +92,21 @@ namespace IndieMarc.Platformer
             coll_start_size = box_coll.size;
             coll_start_offset = box_coll.offset;
             start_scale = transform.localScale;
-            average_ground_pos = transform.position;
-            last_ground_pos = transform.position;
+            average_ground_pos = rigid.position;
+            last_ground_pos = rigid.position;
             hp = max_hp;
         }
 
         void Start()
         {
-
             gameObject.SetActive(true);
 
-            // If firePoint is not assigned, create it
             if (firePoint == null)
             {
                 GameObject firePointObject = new GameObject("FirePoint");
                 firePointObject.transform.parent = transform;
                 firePoint = firePointObject.transform;
 
-                // Set initial position based on facing direction
                 firePoint.localPosition = new Vector3(0.5f, 0, 0);
             }
 
@@ -132,18 +123,19 @@ namespace IndieMarc.Platformer
             if (is_dead)
                 return;
 
-            // Movement velocity
-            float desiredSpeed = Mathf.Abs(move_input.x) > 0.1f ? move_input.x * move_max : 0f;
-            float acceleration = Mathf.Abs(move_input.x) > 0.1f ? move_accel : move_deccel;
-            acceleration = !is_grounded ? jump_move_percent * acceleration : acceleration;
-            move.x = Mathf.MoveTowards(move.x, desiredSpeed, acceleration * Time.fixedDeltaTime);
+            // Apply horizontal movement
+            float targetSpeed = move_input.x * move_max;
+            float speedDiff = targetSpeed - rigid.velocity.x;
+            float accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? move_accel : move_deccel;
+            accelRate = !is_grounded ? jump_move_percent * accelRate : accelRate;
+
+            float movement = speedDiff * accelRate;
+
+            rigid.AddForce(new Vector2(movement, 0));
 
             UpdateFacing();
             UpdateJump();
             UpdateCrouch();
-
-            // Apply movement
-            rigid.velocity = move;
         }
 
         void Update()
@@ -162,20 +154,16 @@ namespace IndieMarc.Platformer
             action_press = !disable_controls ? controls.GetActionDown() : false;
             action_hold = !disable_controls ? controls.GetActionHold() : false;
 
-            // Debugging
-            //Debug.Log($"[Update] can_shoot: {can_shoot}, action_press: {action_press}");
-
             if (jump_press)
                 Jump();
 
             if (can_shoot && action_press)
             {
-                //Debug.Log("[Update] Attempting to shoot fireball.");
                 ShootFireball();
             }
 
             // Reset when falling below a certain point
-            if (transform.position.y < fall_pos_y - GetSize().y)
+            if (rigid.position.y < fall_pos_y - GetSize().y)
             {
                 if (reset_when_fall)
                     Teleport(last_ground_pos);
@@ -185,32 +173,26 @@ namespace IndieMarc.Platformer
         public void EnableShooting()
         {
             can_shoot = true;
-           // Debug.Log("[EnableShooting] Shooting enabled.");
         }
 
         public void DisableShooting()
         {
             can_shoot = false;
-           // Debug.Log("[DisableShooting] Shooting disabled.");
         }
 
         private void ShootFireball()
         {
             if (fireballPrefab != null && firePoint != null)
             {
-                // Determine the spawn position based on facing direction
-                Vector3 spawnPosition = transform.position + new Vector3(facingRight ? 0.5f : -0.5f, 0, 0);
+                Vector3 spawnPosition = rigid.position + new Vector2(facingRight ? 0.5f : -0.5f, 0);
 
-                // Determine the rotation based on facing direction
                 Quaternion spawnRotation = facingRight ? Quaternion.identity : Quaternion.Euler(0, 180, 0);
 
-                // Instantiate the fireball with the correct position and rotation
                 GameObject fireball = Instantiate(fireballPrefab, spawnPosition, spawnRotation);
 
                 Rigidbody2D fireballRb = fireball.GetComponent<Rigidbody2D>();
                 if (fireballRb != null)
                 {
-                    // Set the velocity based on the facing direction
                     Vector2 direction = facingRight ? Vector2.right : Vector2.left;
                     Fireball fireballScript = fireball.GetComponent<Fireball>();
                     float speed = fireballScript != null ? fireballScript.speed : 5f;
@@ -219,73 +201,60 @@ namespace IndieMarc.Platformer
             }
         }
 
-
-
-
         private void UpdateFacing()
         {
-            if (Mathf.Abs(move.x) > 0.01f)
+            if (Mathf.Abs(move_input.x) > 0.01f)
             {
-                // Determine the facing direction
-                facingRight = move.x > 0f;
+                facingRight = move_input.x > 0f;
                 float side = facingRight ? 1f : -1f;
 
-                // Flip the player scale
                 transform.localScale = new Vector3(start_scale.x * side, start_scale.y, start_scale.z);
 
-                // Adjust the FirePoint's position
                 if (firePoint != null)
                 {
                     firePoint.localPosition = new Vector3(facingRight ? 0.5f : -0.5f, firePoint.localPosition.y, firePoint.localPosition.z);
                     firePoint.localRotation = Quaternion.Euler(0, facingRight ? 0 : 180, 0);
                 }
             }
-        
+        }
 
-    }
-
-    private void UpdateJump()
+        private void UpdateJump()
         {
             was_grounded = is_grounded;
 
-            // Detect if the character is grounded
             is_grounded = DetectGrounded();
 
             jump_timer += Time.fixedDeltaTime;
 
-            // Handle jump timing
             if (is_jumping && !jump_hold && jump_timer > jump_time_min)
                 is_jumping = false;
             if (is_jumping && jump_timer > jump_time_max)
                 is_jumping = false;
 
-            // Apply gravity and vertical movement
-            if (!is_grounded)
+            if (rigid.velocity.y > 0 && !jump_hold)
             {
-                // Character is in the air
-                float gravity = !is_jumping ? jump_fall_gravity : jump_gravity;
-                move.y = Mathf.MoveTowards(move.y, -move_max * 2f, gravity * Time.fixedDeltaTime);
+                rigid.gravityScale = jump_gravity;
             }
-            else if (!is_jumping)
+            else if (rigid.velocity.y < 0)
             {
-                // Character is on the ground and not jumping
-                move.y = 0f;
+                rigid.gravityScale = jump_fall_gravity;
+            }
+            else
+            {
+                rigid.gravityScale = 1f;
             }
 
             if (!is_grounded)
                 grounded_timer = 0f;
 
-            // Update grounded position
             if (!was_grounded && is_grounded)
-                average_ground_pos = transform.position;
+                average_ground_pos = rigid.position;
             if (is_grounded)
-                average_ground_pos = Vector3.Lerp(transform.position, average_ground_pos, 1f * Time.deltaTime);
+                average_ground_pos = Vector2.Lerp(rigid.position, average_ground_pos, 1f * Time.deltaTime);
 
-            // Save last landed position
             if (is_grounded && grounded_timer > 1f)
                 last_ground_pos = average_ground_pos;
 
-            // Handle landing event
             if (!was_grounded && is_grounded)
             {
                 onLand?.Invoke();
@@ -301,7 +270,6 @@ namespace IndieMarc.Platformer
             if (move_input.y < -0.1f && is_grounded)
             {
                 is_crouch = true;
-                move = Vector2.zero;
                 box_coll.size = new Vector2(coll_start_size.x, coll_start_size.y * crouch_coll_percent);
                 box_coll.offset = new Vector2(coll_start_offset.x, coll_start_offset.y - coll_start_size.y * (1f - crouch_coll_percent) / 2f);
 
@@ -325,7 +293,7 @@ namespace IndieMarc.Platformer
                 if (is_grounded || force_jump || (!is_double_jump && double_jump))
                 {
                     is_double_jump = !is_grounded;
-                    move.y = jump_strength;
+                    rigid.AddForce(new Vector2(0f, jump_strength), ForceMode2D.Impulse);
                     jump_timer = 0f;
                     is_jumping = true;
                     onJump?.Invoke();
@@ -335,11 +303,12 @@ namespace IndieMarc.Platformer
 
         private bool DetectGrounded()
         {
-            Vector2 position = rigid.position + box_coll.offset + Vector2.down * (box_coll.size.y / 2f);
-            float rayLength = ground_raycast_dist;
+            Vector2 position = rigid.position + box_coll.offset;
+            Vector2 direction = Vector2.down;
+            float distance = (box_coll.size.y / 2f) + ground_raycast_dist;
 
-            RaycastHit2D hit = Physics2D.Raycast(position, Vector2.down, rayLength, ground_layer);
-            Debug.DrawRay(position, Vector2.down * rayLength, Color.red);
+            RaycastHit2D hit = Physics2D.Raycast(position, direction, distance, ground_layer);
+            Debug.DrawRay(position, direction * distance, Color.red);
 
             if (hit.collider != null && hit.collider != box_coll && !hit.collider.isTrigger)
             {
@@ -353,8 +322,8 @@ namespace IndieMarc.Platformer
 
         public void Teleport(Vector3 pos)
         {
-            transform.position = pos;
-            move = Vector2.zero;
+            rigid.position = pos;
+            rigid.velocity = Vector2.zero;
             is_jumping = false;
         }
 
@@ -391,19 +360,17 @@ namespace IndieMarc.Platformer
             {
                 is_dead = true;
                 rigid.velocity = Vector2.zero;
-                move = Vector2.zero;
                 move_input = Vector2.zero;
 
                 onDeath?.Invoke();
 
-                // Respawn the character after a delay
                 StartCoroutine(RespawnCharacter());
             }
         }
 
         private IEnumerator RespawnCharacter()
         {
-            yield return new WaitForSeconds(2f); // Wait for 2 seconds
+            yield return new WaitForSeconds(2f);
             is_dead = false;
             hp = max_hp;
             Teleport(last_ground_pos);
@@ -415,7 +382,7 @@ namespace IndieMarc.Platformer
 
         public Vector2 GetMove()
         {
-            return move;
+            return rigid.velocity;
         }
 
         public Vector2 GetFacing()
@@ -465,7 +432,7 @@ namespace IndieMarc.Platformer
                 is_dead = true;
                 Debug.Log("Player1 hit the lavaSquare and is now dead.");
             }
-            
+
             if (collision.gameObject.CompareTag("Dragon"))
             {
                 if (gameObject != null)
@@ -478,7 +445,6 @@ namespace IndieMarc.Platformer
                 {
                     Debug.Log("Player1 could not be found.");
                 }
-
             }
         }
 
