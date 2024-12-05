@@ -121,8 +121,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86ca38e2e04af4ed29736b1d2bd65c3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveRange: 2
-  moveSpeed: 2
+  moveRange: 3
+  moveSpeed: 5
   PlayerCharacterOne: {fileID: 0}
   PlayerCharacterTwo: {fileID: 0}
   fireballImmunityDuration: 0.1

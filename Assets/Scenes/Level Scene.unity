@@ -2032,6 +2032,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc8f924a3a36b1543be46926baaa6fc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  unlockedCount: 0
   level2Object: {fileID: 761963235}
   level3Object: {fileID: 218840314}
   level4Object: {fileID: 193802707}
