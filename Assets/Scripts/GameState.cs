@@ -30,16 +30,21 @@ public class GameState : MonoBehaviour
     public TextMeshProUGUI gameOverTextTMP;
     public TextMeshProUGUI levelCompleteTextTMP;
     private Color textColor;
+    //private LevelMenu levelMenu;
 
     public GameObject Bridge;
+
+    public int unlockedCount;
 
     // Start is called before the first frame update
     void Start()
     {
         player1 = GameObject.Find("Player1")?.GetComponent<PlayerCharacterOne>();
         player2 = GameObject.Find("Player2")?.GetComponent<PlayerCharacterTwo>();
+        //levelMenu = FindObjectOfType<LevelMenu>();
 
         dragonCount = 0;
+        unlockedCount = 1;
         gameOver = false;
 
         Bridge.SetActive(false);
@@ -81,7 +86,7 @@ public class GameState : MonoBehaviour
             if (gameOverTextTMP != null)
             {
                 textColor = gameOverTextTMP.color;
-                textColor.a = 0;
+                //textColor.a = 0;
                 textColor.a = Mathf.Clamp(textColor.a + 2 * fadeSpeed * Time.deltaTime, 0, 1); // Full visibility is alpha = 1
                 gameOverTextTMP.color = textColor;
             }
@@ -109,8 +114,10 @@ public class GameState : MonoBehaviour
                 textColor.a = Mathf.Clamp(textColor.a + 2 * fadeSpeed * Time.deltaTime, 0, 1); // Full visibility is alpha = 1
                 levelCompleteTextTMP.color = textColor;
             }
-            //add to level completed count
+            unlockedCount++;
+            Debug.Log($"Unlocked levels: {unlockedCount}");
             BackToLevelMenu();
+            Debug.Log("Back to level menu");
         }
 
 
