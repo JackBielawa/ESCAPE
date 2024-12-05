@@ -31,6 +31,8 @@ public class GameState : MonoBehaviour
     public TextMeshProUGUI levelCompleteTextTMP;
     private Color textColor;
 
+    public GameObject Bridge;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -39,6 +41,8 @@ public class GameState : MonoBehaviour
 
         dragonCount = 0;
         gameOver = false;
+
+        Bridge.SetActive(false);
 
     }
 

@@ -11,7 +11,7 @@ using UnityEngine.Events;
 
 namespace IndieMarc.Platformer
 {
-
+    
     public enum LeverState
     {
         left, center, right, disabled
@@ -39,6 +39,8 @@ namespace IndieMarc.Platformer
 
         private static List<Lever> levers = new List<Lever>();
 
+        public GameObject Bridge;
+
         private void Awake()
         {
             levers.Add(this);
@@ -62,6 +64,17 @@ namespace IndieMarc.Platformer
                 ChangeSprite();
                 prev_state = state;
             }
+
+            if (state == LeverState.left)
+            {
+                if (Bridge != null)
+                    Bridge.SetActive(false);  
+            }
+            if (state == LeverState.right)
+            {
+                if (Bridge != null)
+                    Bridge.SetActive(true); 
+            }
         }
 
         private void OnDestroy()
@@ -72,6 +85,13 @@ namespace IndieMarc.Platformer
         void OnTriggerEnter2D(Collider2D coll)
         {
             if (coll.gameObject.GetComponent<PlayerCharacterOne>())
+            {
+                if (state == LeverState.disabled)
+                    return;
+                
+                Activate();
+            }
+            if (coll.gameObject.GetComponent<PlayerCharacterTwo>())
             {
                 if (state == LeverState.disabled)
                     return;
