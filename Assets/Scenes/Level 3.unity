@@ -1229,6 +1229,10 @@ PrefabInstance:
       value: Dragon (1)
       objectReference: {fileID: 0}
     - target: {fileID: 127314, guid: dc4a05e3690144df9b8a99e02f96c999, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 127314, guid: dc4a05e3690144df9b8a99e02f96c999, type: 3}
       propertyPath: m_TagString
       value: Dragon
       objectReference: {fileID: 0}
@@ -5117,7 +5121,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 21278052, guid: dc4a05e3690144df9b8a99e02f96c999, type: 3}
       propertyPath: m_SortingOrder
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

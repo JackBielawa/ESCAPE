@@ -1519,6 +1519,10 @@ PrefabInstance:
       value: Dragon (1)
       objectReference: {fileID: 0}
     - target: {fileID: 127314, guid: dc4a05e3690144df9b8a99e02f96c999, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 127314, guid: dc4a05e3690144df9b8a99e02f96c999, type: 3}
       propertyPath: m_TagString
       value: Dragon
       objectReference: {fileID: 0}
@@ -2107,11 +2111,11 @@ MonoBehaviour:
   unlockedCount: 0
   gameOverOverlay: {fileID: 871130235}
   levelCompleteOverlay: {fileID: 1138672944}
-  gameCompleteOverlay: {fileID: 0}
+  gameCompleteOverlay: {fileID: 1138672944}
   fadeSpeed: 0.5
   gameOverTextTMP: {fileID: 1516030776}
   levelCompleteTextTMP: {fileID: 1345961223}
-  gameCompleteTextTMP: {fileID: 0}
+  gameCompleteTextTMP: {fileID: 1345961223}
   Bridge: {fileID: 1577932711}
 --- !u!4 &782251670
 Transform:
@@ -15556,7 +15560,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 21278052, guid: dc4a05e3690144df9b8a99e02f96c999, type: 3}
       propertyPath: m_SortingOrder
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -14406,9 +14406,11 @@ MonoBehaviour:
   unlockedCount: 0
   gameOverOverlay: {fileID: 1492211432}
   levelCompleteOverlay: {fileID: 954197466}
+  gameCompleteOverlay: {fileID: 0}
   fadeSpeed: 0.5
   gameOverTextTMP: {fileID: 1088412698}
   levelCompleteTextTMP: {fileID: 63692451}
+  gameCompleteTextTMP: {fileID: 0}
   Bridge: {fileID: 211295697}
 --- !u!4 &1271051173
 Transform:
@@ -14778,6 +14780,10 @@ PrefabInstance:
       value: Dragon (1)
       objectReference: {fileID: 0}
     - target: {fileID: 127314, guid: dc4a05e3690144df9b8a99e02f96c999, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 127314, guid: dc4a05e3690144df9b8a99e02f96c999, type: 3}
       propertyPath: m_TagString
       value: Dragon
       objectReference: {fileID: 0}
@@ -14791,11 +14797,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 433918, guid: dc4a05e3690144df9b8a99e02f96c999, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 24.36
+      value: -0.4
       objectReference: {fileID: 0}
     - target: {fileID: 433918, guid: dc4a05e3690144df9b8a99e02f96c999, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.9
+      value: -4.5
       objectReference: {fileID: 0}
     - target: {fileID: 433918, guid: dc4a05e3690144df9b8a99e02f96c999, type: 3}
       propertyPath: m_LocalPosition.z
@@ -15552,7 +15558,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2029214899
 RectTransform:
   m_ObjectHideFlags: 0
