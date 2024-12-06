@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -15,5 +16,12 @@ public class Menu : MonoBehaviour
     {
         Debug.Log("Quit button clicked. Exiting the application...");
         Application.Quit(); // Exits the game when built
+    }
+
+    void Start()
+    {
+        PlayerPrefs.SetInt("unlockedCount", 0);
+        PlayerPrefs.Save(); // Save to persist the change
+        Debug.Log("PlayerPrefs initialized: unlockedCount set to 0");
     }
 }

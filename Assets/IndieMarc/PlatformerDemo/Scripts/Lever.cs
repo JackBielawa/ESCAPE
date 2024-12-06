@@ -68,7 +68,7 @@ namespace IndieMarc.Platformer
             if (state == LeverState.left)
             {
                 if (Bridge != null)
-                    Bridge.SetActive(false);  
+                    Bridge.SetActive(true);  
             }
             if (state == LeverState.right)
             {

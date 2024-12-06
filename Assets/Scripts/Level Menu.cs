@@ -5,56 +5,93 @@ using UnityEngine.SceneManagement;
 
 public class LevelMenu : MonoBehaviour
 {
-    private int cookieCount;
-
-    public int unlockedCount;
     public GameObject level2Object;
     public GameObject level3Object;
     public GameObject level4Object;
     public GameObject level5Object;
-    
+
+    public GameObject level2Lock;
+    public GameObject level3Lock;
+    public GameObject level4Lock;
+    public GameObject level5Lock;
+
+    private int unlockedCount;
     void Start()
     {
+        
 
-        unlockedCount = 1;
-        /*
-        if (PlayerPrefs.HasKey("CookieCount"))
+
+
+        if (PlayerPrefs.HasKey("unlockedCount"))
         {
-            cookieCount = PlayerPrefs.GetInt("CookieCount");
-            Debug.Log("Cookie count retrieved: " + cookieCount);
+            unlockedCount = PlayerPrefs.GetInt("unlockedCount");
+            Debug.Log("unlockedCount retrieved: " + unlockedCount);
         }
         else
         {
-            Debug.LogError("Cookie count not found in PlayerPrefs.");
+            Debug.LogError("unlockedCount not found in PlayerPrefs.");
         }
-        Debug.Log("Cookie count is " + cookieCount);
-        */
-        if(cookieCount == 1)
+        Debug.Log("unlockedCount is " + unlockedCount);
+
+        if(unlockedCount == 1)
         {
             if (level2Object != null) // Check if the reference is assigned
             {
-                level2Object.SetActive(true); // Activate the GameObject
-                Debug.Log("Player's cookie count: " + cookieCount);
+                level2Object.SetActive(true);
+                level2Lock.SetActive(false);
+                Debug.Log("unlockedCount: " + unlockedCount);
             }
             else
             {
                 Debug.LogError("level2Object is not assigned in the Inspector!");
             }
 
-        } else if(cookieCount == 2)
+        } else if(unlockedCount == 2)
         {
             if (level3Object != null) // Check if the reference is assigned
             {
                 level3Object.SetActive(true); // Activate the GameObject
-                Debug.Log("Player's cookie count: " + cookieCount);
+                level3Lock.SetActive(false);
+                Debug.Log("unlockedCount: " + unlockedCount);
             }
             else
             {
                 Debug.LogError("level3Object is not assigned in the Inspector!");
             }
+        } else if(unlockedCount == 3)
+        {
+            if (level4Object != null) // Check if the reference is assigned
+            {
+                level4Object.SetActive(true); // Activate the GameObject
+                level4Lock.SetActive(false);
+                Debug.Log("unlockedCount: " + unlockedCount);
+            }
+            else
+            {
+                Debug.LogError("level4Object is not assigned in the Inspector!");
+            }
+        } else if(unlockedCount == 4)
+        {
+            if (level5Object != null) // Check if the reference is assigned
+            {
+                level5Object.SetActive(true); // Activate the GameObject
+                level5Lock.SetActive(false);
+                Debug.Log("unlockedCount: " + unlockedCount);
+            }
+            else
+            {
+                Debug.LogError("level5Object is not assigned in the Inspector!");
+            }
         }
 
+
     }
+
+    void Update()
+    {
+
+    }
+
     public void MainMenuButton ()
     {
         SceneManager.LoadScene(0);
@@ -70,17 +107,20 @@ public class LevelMenu : MonoBehaviour
         SceneManager.LoadScene(3);
     }
 
-/*
-
-    public void UpdateLockedLevels ()
+    public void PlayLevel3Button ()
     {
-        if(cookieCount == 1)
-        {
-            GameObject imageGameObject = GameObject.Find("Level 2");
-            imageGameObject.SetActive(true);
-            Debug.Log("Player's cookie count: " + cookieCount);
-
-        }
+        SceneManager.LoadScene(4);
     }
-*/
+
+    public void PlayLevel4Button ()
+    {
+        SceneManager.LoadScene(5);
+    }
+
+    public void PlayLevel5Button ()
+    {
+        SceneManager.LoadScene(6);
+    }
+
+
 }

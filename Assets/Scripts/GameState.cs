@@ -14,6 +14,8 @@ public class GameState : MonoBehaviour
 
     public int dragonCount;
 
+    public int unlockedCount;
+
     private bool player1dead = false;
     private bool player2dead = false;
 
@@ -30,6 +32,8 @@ public class GameState : MonoBehaviour
     private Color textColor;
 
     public GameObject Bridge;
+
+    private bool levelCompleteProcessed = false; // New flag to track level completion
 
     void Start()
     {
@@ -63,8 +67,16 @@ public class GameState : MonoBehaviour
 
         if (dragonCount == 2)
         {
+
             DisplayLevelCompleteScreen();
+
             BackToLevelMenu();
+        }
+        if (dragonCount == 2 && !levelCompleteProcessed)
+        {
+            levelCompleteProcessed = true; // Set flag to prevent reprocessing
+            UpdateLockedLevels();
+  
         }
     }
 
@@ -116,5 +128,15 @@ public class GameState : MonoBehaviour
     {
         yield return new WaitForSeconds(4.0f);
         SceneManager.LoadScene(1);
+    }
+
+    public void UpdateLockedLevels()
+    {
+
+        unlockedCount++;
+        Debug.Log("Updated unlockedCount to: " + unlockedCount);
+        PlayerPrefs.SetInt("unlockedCount", unlockedCount);
+        PlayerPrefs.Save();
+            
     }
 }
