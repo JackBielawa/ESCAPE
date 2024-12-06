@@ -17,75 +17,49 @@ public class LevelMenu : MonoBehaviour
 
     private int unlockedCount;
     void Start()
+{
+    // Retrieve unlockedCount from PlayerPrefs, with a default value of 0
+    unlockedCount = PlayerPrefs.GetInt("unlockedCount", 0);
+    Debug.Log("unlockedCount retrieved: " + unlockedCount);
+
+    // Unlock levels based on unlockedCount
+    if (unlockedCount >= 1)
     {
-        
-
-
-
-        if (PlayerPrefs.HasKey("unlockedCount"))
+        if (level2Object != null)
         {
-            unlockedCount = PlayerPrefs.GetInt("unlockedCount");
-            Debug.Log("unlockedCount retrieved: " + unlockedCount);
+            level2Object.SetActive(true);
+            level2Lock.SetActive(false);
         }
         else
         {
-            Debug.LogError("unlockedCount not found in PlayerPrefs.");
+            Debug.LogError("level2Object is not assigned in the Inspector!");
         }
-        Debug.Log("unlockedCount is " + unlockedCount);
-
-        if(unlockedCount == 1)
-        {
-            if (level2Object != null) // Check if the reference is assigned
-            {
-                level2Object.SetActive(true);
-                level2Lock.SetActive(false);
-                Debug.Log("unlockedCount: " + unlockedCount);
-            }
-            else
-            {
-                Debug.LogError("level2Object is not assigned in the Inspector!");
-            }
-
-        } else if(unlockedCount == 2)
-        {
-            if (level3Object != null) // Check if the reference is assigned
-            {
-                level3Object.SetActive(true); // Activate the GameObject
-                level3Lock.SetActive(false);
-                Debug.Log("unlockedCount: " + unlockedCount);
-            }
-            else
-            {
-                Debug.LogError("level3Object is not assigned in the Inspector!");
-            }
-        } else if(unlockedCount == 3)
-        {
-            if (level4Object != null) // Check if the reference is assigned
-            {
-                level4Object.SetActive(true); // Activate the GameObject
-                level4Lock.SetActive(false);
-                Debug.Log("unlockedCount: " + unlockedCount);
-            }
-            else
-            {
-                Debug.LogError("level4Object is not assigned in the Inspector!");
-            }
-        } else if(unlockedCount == 4)
-        {
-            if (level5Object != null) // Check if the reference is assigned
-            {
-                level5Object.SetActive(true); // Activate the GameObject
-                level5Lock.SetActive(false);
-                Debug.Log("unlockedCount: " + unlockedCount);
-            }
-            else
-            {
-                Debug.LogError("level5Object is not assigned in the Inspector!");
-            }
-        }
-
-
     }
+    if (unlockedCount >= 2)
+    {
+        if (level3Object != null)
+        {
+            level3Object.SetActive(true);
+            level3Lock.SetActive(false);
+        }
+        else
+        {
+            Debug.LogError("level3Object is not assigned in the Inspector!");
+        }
+    }
+    if (unlockedCount >= 3)
+    {
+        if (level4Object != null)
+        {
+            level4Object.SetActive(true);
+            level4Lock.SetActive(false);
+        }
+        else
+        {
+            Debug.LogError("level4Object is not assigned in the Inspector!");
+        }
+    }
+}
 
     void Update()
     {

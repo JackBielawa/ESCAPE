@@ -23,12 +23,15 @@ public class GameState : MonoBehaviour
 
     public Image gameOverOverlay;
     public Image levelCompleteOverlay;
+    public Image gameCompleteOverlay;
     public float fadeSpeed = 0.5f;
 
     private Color overlayColor;
+    private Color wonOverlayColor;
     private float maxAlpha = 120f / 255f;
     public TextMeshProUGUI gameOverTextTMP;
     public TextMeshProUGUI levelCompleteTextTMP;
+    public TextMeshProUGUI gameCompleteTextTMP;
     private Color textColor;
 
     public GameObject Bridge;
@@ -65,7 +68,7 @@ public class GameState : MonoBehaviour
             BackToLevelMenu();
         }
 
-        if (dragonCount == 2)
+        if (dragonCount == 2 && unlockedCount < 4)
         {
 
             DisplayLevelCompleteScreen();
@@ -74,10 +77,11 @@ public class GameState : MonoBehaviour
         }
         if (dragonCount == 2 && !levelCompleteProcessed)
         {
-            levelCompleteProcessed = true; // Set flag to prevent reprocessing
+            Debug.Log("Level completion detected. Calling UpdateLockedLevels...");
+            levelCompleteProcessed = true;
             UpdateLockedLevels();
-  
         }
+
     }
 
     public void TriggerGameOver()
@@ -119,9 +123,31 @@ public class GameState : MonoBehaviour
         }
     }
 
+    private void DisplayGameCompleteScreen()
+    {
+        if (gameCompleteOverlay != null)
+        {
+            wonOverlayColor = gameCompleteOverlay.color;
+            wonOverlayColor.a = Mathf.Clamp(wonOverlayColor.a + fadeSpeed * Time.deltaTime, 0, maxAlpha);
+            gameCompleteOverlay.color = wonOverlayColor;
+        }
+
+        if (gameCompleteTextTMP != null)
+        {
+            textColor = gameCompleteTextTMP.color;
+            textColor.a = Mathf.Clamp(textColor.a + 2 * fadeSpeed * Time.deltaTime, 0, 1);
+            gameCompleteTextTMP.color = textColor;
+        }
+    }
+
     public void BackToLevelMenu()
     {
         StartCoroutine(WaitAndLoadScene());
+    }
+
+    public void BackToMainMenu()
+    {
+        SceneManager.LoadScene(0);
     }
 
     private IEnumerator WaitAndLoadScene()
@@ -130,13 +156,32 @@ public class GameState : MonoBehaviour
         SceneManager.LoadScene(1);
     }
 
+
+    private IEnumerator GameCompleteBackToMenu()
+    {
+        DisplayGameCompleteScreen();
+        yield return new WaitForSeconds(4.0f);
+        BackToMainMenu();
+    }
+
+ 
     public void UpdateLockedLevels()
     {
+        // Retrieve the current unlockedCount from PlayerPrefs
+        unlockedCount = PlayerPrefs.GetInt("unlockedCount", 0);
 
+        // Increment the unlockedCount
         unlockedCount++;
         Debug.Log("Updated unlockedCount to: " + unlockedCount);
+
+        // Save the updated unlockedCount back to PlayerPrefs
         PlayerPrefs.SetInt("unlockedCount", unlockedCount);
-        PlayerPrefs.Save();
-            
+        PlayerPrefs.Save(); // Ensure the changes are saved immediately
+
+        if (unlockedCount == 4)
+        {
+            StartCoroutine(GameCompleteBackToMenu());
+  
+        }
     }
 }
