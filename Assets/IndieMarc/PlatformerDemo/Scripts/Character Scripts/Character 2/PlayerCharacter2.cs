@@ -18,19 +18,14 @@ namespace IndieMarc.Platformer
         public bool invulnerable = false;
 
         [Header("Movement")]
-        public float move_accel = 1f;
-        public float move_deccel = 1f;
-        public float move_max = 1f;
+        public float move_accel = 50f; // Increased acceleration
+        public float move_deccel = 50f; // Increased deceleration
+        public float move_max = 5f;
 
         [Header("Jump")]
         public bool can_jump = true;
         public bool double_jump = true;
-        public float jump_strength = 1f;
-        public float jump_time_min = 0.1f;
-        public float jump_time_max = 0.5f;
-        public float jump_gravity = 1f;
-        public float jump_fall_gravity = 2f;
-        public float jump_move_percent = 0.75f;
+        public float jump_strength = 10f; // Increased jump strength for better upward flow
         public LayerMask ground_layer;
         public float ground_raycast_dist = 0.1f;
 
@@ -44,7 +39,7 @@ namespace IndieMarc.Platformer
         public float fall_damage_percent = 0.25f;
 
         [Header("Transformation")]
-        public GameObject rectanglePrefab; // Assign your Rectangle prefab here
+        public GameObject rectanglePrefab;
 
         public UnityAction onDeath;
         public UnityAction onHit;
@@ -60,7 +55,6 @@ namespace IndieMarc.Platformer
         private Vector3 last_ground_pos;
         private Vector3 average_ground_pos;
 
-        private Vector2 move;
         private Vector2 move_input;
         private bool jump_press;
         private bool jump_hold;
@@ -76,17 +70,11 @@ namespace IndieMarc.Platformer
         private bool is_double_jump = false;
         private bool disable_controls = false;
         private float grounded_timer = 0f;
-        private float jump_timer = 0f;
         private float hit_timer = 0f;
 
-        // New variables for power-up and transformation
         private bool hasPowerUp = false;
         private bool isRectangleForm = false;
         private GameObject rectangleInstance;
-        private Vector2 originalColliderSize;
-        private Vector2 originalColliderOffset;
-        private Vector2 rectangleColliderSize;
-        private Vector2 rectangleColliderOffset;
 
         private static Dictionary<int, PlayerCharacterTwo> character_list = new Dictionary<int, PlayerCharacterTwo>();
 
@@ -98,34 +86,22 @@ namespace IndieMarc.Platformer
             coll_start_size = box_coll.size;
             coll_start_offset = box_coll.offset;
             start_scale = transform.localScale;
-            average_ground_pos = transform.position;
-            last_ground_pos = transform.position;
+            average_ground_pos = rigid.position;
+            last_ground_pos = rigid.position;
             hp = max_hp;
-
-            // Store original collider size and offset
-            originalColliderSize = box_coll.size;
-            originalColliderOffset = box_coll.offset;
-
-            // Debugging
-            Debug.Log($"[PlayerCharacterTwo] Awake: Player ID {player_id}, Start Position {transform.position}");
         }
 
         void OnDestroy()
         {
             character_list.Remove(player_id);
-            Debug.Log($"[PlayerCharacterTwo] OnDestroy: Player ID {player_id} removed.");
         }
 
         void Start()
         {
             gameObject.SetActive(true);
-
-            // Additional startup debugging if needed
-            Debug.Log($"[PlayerCharacterTwo] Start: Player ID {player_id}");
             is_dead = false;
         }
 
-        // Handle physics
         void FixedUpdate()
         {
             if (is_dead)
@@ -133,30 +109,26 @@ namespace IndieMarc.Platformer
 
             if (disable_controls)
             {
-                // No movement when controls are disabled
-                move = Vector2.zero;
+                rigid.velocity = new Vector2(0f, rigid.velocity.y);
             }
             else
             {
-                // Movement velocity
-                float desiredSpeed = Mathf.Abs(move_input.x) > 0.1f ? move_input.x * move_max : 0f;
-                float acceleration = Mathf.Abs(move_input.x) > 0.1f ? move_accel : move_deccel;
-                acceleration = !is_grounded ? jump_move_percent * acceleration : acceleration;
-                move.x = Mathf.MoveTowards(move.x, desiredSpeed, acceleration * Time.fixedDeltaTime);
+                // Apply horizontal movement
+                float targetSpeed = move_input.x * move_max;
+                float speedDiff = targetSpeed - rigid.velocity.x;
+                float accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? move_accel : move_deccel;
+                accelRate = !is_grounded ? accelRate * 0.5f : accelRate; // Reduced air control
+
+                float movement = speedDiff * accelRate * Time.fixedDeltaTime; // Adjusted for frame rate
+
+                rigid.AddForce(new Vector2(movement, 0));
 
                 UpdateFacing();
                 UpdateJump();
                 UpdateCrouch();
             }
-
-            // Move
-            rigid.velocity = move;
-
-            // Debugging
-            Debug.Log($"[FixedUpdate] Player {player_id}: Rigidbody velocity: {rigid.velocity}");
         }
 
-        // Handle render and controls
         void Update()
         {
             if (is_dead)
@@ -170,111 +142,79 @@ namespace IndieMarc.Platformer
             move_input = !disable_controls ? controls.GetMove() : Vector2.zero;
             jump_press = !disable_controls ? controls.GetJumpDown() : false;
             jump_hold = !disable_controls ? controls.GetJumpHold() : false;
-            action_press = !disable_controls ? controls.GetActionDown() : false;
-            action_hold = !disable_controls ? controls.GetActionHold() : false;
 
-            // Debugging
-            Debug.Log($"[Update] Player {player_id}: move_input: {move_input}, jump_press: {jump_press}, jump_hold: {jump_hold}");
+            // Allow action_press even when controls are disabled
+            action_press = controls.GetActionDown();
+            action_hold = controls.GetActionHold();
 
-            if (!disable_controls && (jump_press || move_input.y > 0.5f))
+            if (!disable_controls && jump_press)
                 Jump();
 
             // Handle transformation
-            if (hasPowerUp && controls.GetActionDown())
+            if (hasPowerUp && action_press)
             {
                 ToggleForm();
             }
 
-            // Keep rectangle at player's position
-            if (isRectangleForm && rectangleInstance != null)
+            // Reset when falling below a certain point
+            if (rigid.position.y < fall_pos_y - GetSize().y)
             {
-                rectangleInstance.transform.position = transform.position;
-            }
-
-            // Reset when fall
-            if (transform.position.y < fall_pos_y - GetSize().y)
-            {
-                // For debugging, you can comment out the damage and death to prevent character from dying
-                // TakeDamage(max_hp * fall_damage_percent);
-
                 if (reset_when_fall)
                     Teleport(last_ground_pos);
-
-                // Debugging
-                Debug.Log($"[Update] Player {player_id} fell below fall_pos_y: {fall_pos_y}, Teleporting to last ground position: {last_ground_pos}");
             }
         }
 
         private void UpdateFacing()
         {
-            if (Mathf.Abs(move.x) > 0.01f)
+            if (Mathf.Abs(move_input.x) > 0.01f)
             {
-                float side = (move.x < 0f) ? -1f : 1f;
+                float side = (move_input.x < 0f) ? -1f : 1f;
                 transform.localScale = new Vector3(start_scale.x * side, start_scale.y, start_scale.z);
-
-                // Debugging
-                Debug.Log($"[UpdateFacing] Player {player_id}: Facing direction changed. New localScale.x: {transform.localScale.x}");
             }
         }
 
         private void UpdateJump()
         {
-            // Update the previous grounded state
             was_grounded = is_grounded;
 
             // Detect if the character is grounded
             is_grounded = DetectGrounded();
 
-            jump_timer += Time.fixedDeltaTime;
-
-            // Debugging
-            Debug.Log($"[UpdateJump] Player {player_id}: was_grounded: {was_grounded}, is_grounded: {is_grounded}, is_jumping: {is_jumping}, jump_timer: {jump_timer}");
-
-            // Handle jump timing
-            if (is_jumping && !jump_hold && jump_timer > jump_time_min)
-                is_jumping = false;
-            if (is_jumping && jump_timer > jump_time_max)
-                is_jumping = false;
-
-            // Apply gravity and vertical movement
-            if (!is_grounded)
-            {
-                // Character is in the air
-                float gravity = !is_jumping ? jump_fall_gravity : jump_gravity; // Adjust gravity based on jumping state
-                move.y = Mathf.MoveTowards(move.y, -move_max * 2f, gravity * Time.fixedDeltaTime);
-
-                // Debugging
-                Debug.Log($"[UpdateJump] Player {player_id}: In air. Applying gravity: {gravity}, move.y: {move.y}");
-            }
-            else if (!is_jumping)
-            {
-                // Character is on the ground and not jumping
-                move.y = 0f;
-
-                // Debugging
-                Debug.Log($"[UpdateJump] Player {player_id}: Grounded. Resetting vertical movement.");
-            }
-
-            if (!is_grounded)
-                grounded_timer = 0f;
-
-            // Update grounded position
-            if (!was_grounded && is_grounded)
-                average_ground_pos = transform.position;
+            // Reset jump variables when grounded
             if (is_grounded)
-                average_ground_pos = Vector3.Lerp(transform.position, average_ground_pos, 1f * Time.deltaTime);
+            {
+                is_jumping = false;
+                is_double_jump = false;
+            }
 
-            // Save last landed position
-            if (is_grounded && grounded_timer > 1f)
+            // Adjust gravity for smoother jump
+            if (rigid.velocity.y > 0.1f && !jump_hold)
+            {
+                // Apply higher gravity when player releases jump early
+                rigid.gravityScale = 3f;
+            }
+            else if (rigid.velocity.y < -0.1f)
+            {
+                // Apply higher gravity when falling
+                rigid.gravityScale = 3f;
+            }
+            else
+            {
+                // Normal gravity
+                rigid.gravityScale = 1f;
+            }
+
+            // Update grounded position and save the last valid grounded position
+            if (is_grounded)
+            {
+                average_ground_pos = Vector2.Lerp(rigid.position, average_ground_pos, 0.5f);
                 last_ground_pos = average_ground_pos;
+            }
 
-            // Handle landing event
+            // Trigger landing event
             if (!was_grounded && is_grounded)
             {
                 onLand?.Invoke();
-
-                // Debugging
-                Debug.Log($"[UpdateJump] Player {player_id}: Landed on ground.");
             }
         }
 
@@ -283,21 +223,16 @@ namespace IndieMarc.Platformer
             if (!can_crouch)
                 return;
 
-            // Crouch
             bool was_crouch = is_crouch;
             if (move_input.y < -0.1f && is_grounded)
             {
                 is_crouch = true;
-                move = Vector2.zero;
                 box_coll.size = new Vector2(coll_start_size.x, coll_start_size.y * crouch_coll_percent);
                 box_coll.offset = new Vector2(coll_start_offset.x, coll_start_offset.y - coll_start_size.y * (1f - crouch_coll_percent) / 2f);
 
                 if (!was_crouch && is_crouch)
                 {
                     onCrouch?.Invoke();
-
-                    // Debugging
-                    Debug.Log($"[UpdateCrouch] Player {player_id}: Started crouching.");
                 }
             }
             else
@@ -305,61 +240,53 @@ namespace IndieMarc.Platformer
                 is_crouch = false;
                 box_coll.size = coll_start_size;
                 box_coll.offset = coll_start_offset;
-
-                if (was_crouch && !is_crouch)
-                {
-                    // Debugging
-                    Debug.Log($"[UpdateCrouch] Player {player_id}: Stopped crouching.");
-                }
             }
         }
 
-        public void Jump(bool force_jump = false)
+        public void Jump()
         {
-            if (can_jump && (!is_crouch || force_jump))
+            if (can_jump && !is_crouch)
             {
-                if (is_grounded || force_jump || (!is_double_jump && double_jump))
+                if (is_grounded)
                 {
-                    is_double_jump = !is_grounded;
-                    move.y = jump_strength;
-                    jump_timer = 0f;
+                    // First jump
+                    rigid.velocity = new Vector2(rigid.velocity.x, jump_strength);
                     is_jumping = true;
                     onJump?.Invoke();
-
-                    // Debugging
-                    Debug.Log($"[Jump] Player {player_id}: Jump initiated. is_double_jump: {is_double_jump}, move.y: {move.y}");
+                }
+                else if (double_jump && !is_double_jump)
+                {
+                    // Double jump
+                    rigid.velocity = new Vector2(rigid.velocity.x, jump_strength);
+                    is_double_jump = true;
+                    onJump?.Invoke();
                 }
             }
         }
 
         private bool DetectGrounded()
         {
-            Vector2 position = rigid.position + box_coll.offset + Vector2.down * (box_coll.size.y / 2f);
-            float rayLength = ground_raycast_dist;
+            Vector2 position = rigid.position + box_coll.offset;
+            Vector2 direction = Vector2.down;
+            float distance = (box_coll.size.y / 2f) + ground_raycast_dist;
 
-            RaycastHit2D hit = Physics2D.Raycast(position, Vector2.down, rayLength, ground_layer);
-            Debug.DrawRay(position, Vector2.down * rayLength, Color.red);
+            RaycastHit2D hit = Physics2D.Raycast(position, direction, distance, ground_layer);
 
             if (hit.collider != null && hit.collider != box_coll && !hit.collider.isTrigger)
             {
-                Debug.Log($"[DetectGrounded] Player {player_id}: Hit detected with {hit.collider.name} at point {hit.point}");
                 return true;
             }
             else
             {
-                Debug.Log($"[DetectGrounded] Player {player_id}: No ground detected.");
                 return false;
             }
         }
 
         public void Teleport(Vector3 pos)
         {
-            transform.position = pos;
-            move = Vector2.zero;
+            rigid.position = pos;
+            rigid.velocity = Vector2.zero;
             is_jumping = false;
-
-            // Debugging
-            Debug.Log($"[Teleport] Player {player_id}: Teleported to position {pos}");
         }
 
         public void HealDamage(float heal)
@@ -368,9 +295,6 @@ namespace IndieMarc.Platformer
             {
                 hp += heal;
                 hp = Mathf.Min(hp, max_hp);
-
-                // Debugging
-                Debug.Log($"[HealDamage] Player {player_id}: Healed {heal} HP. Current HP: {hp}");
             }
         }
 
@@ -380,9 +304,6 @@ namespace IndieMarc.Platformer
             {
                 hp -= damage;
                 hit_timer = -1f;
-
-                // Debugging
-                Debug.Log($"[TakeDamage] Player {player_id}: Took {damage} damage. Current HP: {hp}");
 
                 if (hp <= 0f)
                 {
@@ -401,29 +322,21 @@ namespace IndieMarc.Platformer
             {
                 is_dead = true;
                 rigid.velocity = Vector2.zero;
-                move = Vector2.zero;
                 move_input = Vector2.zero;
 
                 onDeath?.Invoke();
 
-                // Debugging
-                Debug.Log($"[Kill] Player {player_id}: Character has died.");
-
-                // For debugging, respawn the character after a delay
                 StartCoroutine(RespawnCharacter());
             }
         }
 
         private IEnumerator RespawnCharacter()
         {
-            yield return new WaitForSeconds(2f); // Wait for 2 seconds
+            yield return new WaitForSeconds(2f);
             is_dead = false;
             hp = max_hp;
             Teleport(last_ground_pos);
             EnableControls();
-
-            // Debugging
-            Debug.Log($"[RespawnCharacter] Player {player_id}: Character has respawned.");
         }
 
         public void DisableControls() { disable_controls = true; }
@@ -431,7 +344,7 @@ namespace IndieMarc.Platformer
 
         public Vector2 GetMove()
         {
-            return move;
+            return rigid.velocity;
         }
 
         public Vector2 GetFacing()
@@ -479,7 +392,6 @@ namespace IndieMarc.Platformer
             if (collision.gameObject.CompareTag("LavaSquare"))
             {
                 is_dead = true;
-                Debug.Log("Player2 hit the lavaSquare and is now dead.");
             }
 
             if (collision.gameObject.CompareTag("Dragon"))
@@ -488,15 +400,8 @@ namespace IndieMarc.Platformer
                 {
                     gameObject.SetActive(false);
                     UpdateDragonCount();
-                    Debug.Log("Player2 has been deactivated.");
-                }
-                else
-                {
-                    Debug.Log("Player2 could not be found.");
                 }
             }
-
-
         }
 
         void UpdateDragonCount()
@@ -506,91 +411,129 @@ namespace IndieMarc.Platformer
             {
                 gameState.dragonCount++;
             }
-            else
-            {
-                Debug.LogError("GameState not found in the scene!");
-            }
         }
 
-        // New method to collect the power-up
         public void CollectPowerUp()
         {
             hasPowerUp = true;
-            Debug.Log($"[CollectPowerUp] Player {player_id}: Power-up collected.");
         }
 
-        // Updated method to toggle between forms
         private void ToggleForm()
         {
             isRectangleForm = !isRectangleForm;
 
             if (isRectangleForm)
             {
-                // Switch to rectangle form
+                // **Transformation into rectangle form**
+
+                // Instantiate rectanglePrefab if not already instantiated
                 if (rectangleInstance == null)
                 {
                     rectangleInstance = Instantiate(rectanglePrefab);
-                    rectangleInstance.transform.position = transform.position;
-
-                    // Disable rectangle's own collider to avoid conflicts
-                    BoxCollider2D rectCollider = rectangleInstance.GetComponent<BoxCollider2D>();
-                    if (rectCollider != null)
-                    {
-                        rectangleColliderSize = rectCollider.size;
-                        rectangleColliderOffset = rectCollider.offset;
-                        rectCollider.enabled = false;
-                    }
-                    else
-                    {
-                        // Set default values if collider not found
-                        rectangleColliderSize = originalColliderSize;
-                        rectangleColliderOffset = originalColliderOffset;
-                    }
+                    rectangleInstance.name = "RectanglePlatform"; // For debugging purposes
                 }
                 else
                 {
+                    // Re-enable rectangleInstance
                     rectangleInstance.SetActive(true);
-                    rectangleInstance.transform.position = transform.position;
                 }
 
-                // Disable player's visual components
+                // Position rectangle at Player 2's position
+                rectangleInstance.transform.position = transform.position;
+
+                // Disable Player 2's collider and rigidbody
+                box_coll.enabled = false;
+                rigid.simulated = false;
+
+                // Enable rectangle's collider
+                BoxCollider2D rectCollider = rectangleInstance.GetComponent<BoxCollider2D>();
+                if (rectCollider == null)
+                {
+                    rectCollider = rectangleInstance.AddComponent<BoxCollider2D>();
+                }
+                rectCollider.enabled = true;
+                rectCollider.isTrigger = false;
+
+                // Ensure rectangle is on the "Platform" layer
+                int platformLayerIndex = LayerMask.NameToLayer("Platform");
+                if (platformLayerIndex == -1)
+                {
+                    Debug.LogError("Layer 'Platform' does not exist. Please add it in the Tags and Layers settings.");
+                }
+                else
+                {
+                    rectangleInstance.layer = platformLayerIndex;
+                }
+
+                // Add or get Rigidbody2D component and set it to Static
+                Rigidbody2D rectRigid = rectangleInstance.GetComponent<Rigidbody2D>();
+                if (rectRigid == null)
+                {
+                    rectRigid = rectangleInstance.AddComponent<Rigidbody2D>();
+                }
+                rectRigid.bodyType = RigidbodyType2D.Static;
+                rectRigid.simulated = true; // Ensure it's simulated
+
+                // Enable rectangleInstance's sprite renderer
+                SpriteRenderer rectSprite = rectangleInstance.GetComponent<SpriteRenderer>();
+                if (rectSprite != null)
+                {
+                    rectSprite.enabled = true;
+                }
+
+                // Hide Player 2's sprite
                 GetComponent<SpriteRenderer>().enabled = false;
 
-                // Adjust collider size
-                box_coll.size = rectangleColliderSize;
-                box_coll.offset = rectangleColliderOffset;
-
-                // Disable player controls
+                // Disable Player 2's controls
                 disable_controls = true;
-
-                // Freeze player position
-                rigid.bodyType = RigidbodyType2D.Static;
-
-                Debug.Log($"[ToggleForm] Player {player_id}: Transformed into rectangle.");
             }
             else
             {
-                // Switch to normal form
-                if (rectangleInstance != null)
-                {
-                    rectangleInstance.SetActive(false);
-                }
-                // Enable player's visual components
+                // **Reverting back to normal form**
+
+                // Re-enable Player 2's collider and rigidbody
+                box_coll.enabled = true;
+                rigid.simulated = true;
+
+                // Show Player 2's sprite
                 GetComponent<SpriteRenderer>().enabled = true;
 
-                // Restore collider size
-                box_coll.size = originalColliderSize;
-                box_coll.offset = originalColliderOffset;
+                // Disable rectangleInstance's components
+                if (rectangleInstance != null)
+                {
+                    // Disable rectangle's collider
+                    BoxCollider2D rectCollider = rectangleInstance.GetComponent<BoxCollider2D>();
+                    if (rectCollider != null)
+                    {
+                        rectCollider.enabled = false;
+                    }
 
-                // Enable player controls
+                    // Disable rectangle's rigidbody simulation
+                    Rigidbody2D rectRigid = rectangleInstance.GetComponent<Rigidbody2D>();
+                    if (rectRigid != null)
+                    {
+                        rectRigid.simulated = false;
+                    }
+
+                    // Disable rectangleInstance's sprite renderer
+                    SpriteRenderer rectSprite = rectangleInstance.GetComponent<SpriteRenderer>();
+                    if (rectSprite != null)
+                    {
+                        rectSprite.enabled = false;
+                    }
+
+                    // Optionally, keep rectangleInstance active to avoid issues with reactivation
+                    // rectangleInstance.SetActive(false); // Not necessary if components are disabled
+                }
+
+                // Re-enable Player 2's controls
                 disable_controls = false;
 
-                // Unfreeze player position
-                rigid.bodyType = RigidbodyType2D.Dynamic;
-
-                Debug.Log($"[ToggleForm] Player {player_id}: Reverted to normal form.");
+                // Reposition Player 2 to the rectangle's position
+                transform.position = rectangleInstance.transform.position;
             }
         }
+
 
         public static PlayerCharacterTwo GetNearest(Vector3 pos, float range = 99999f, bool alive_only = false)
         {

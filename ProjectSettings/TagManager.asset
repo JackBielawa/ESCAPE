@@ -7,9 +7,11 @@ TagManager:
   - Enemy
   - Dragon
   - PowerUps
-  - PowerUpTwo
   - PlayerTwo
   - LavaSquare
+  - Fireball
+  - PowerUpTwo
+  - PowerUpOne
   layers:
   - Default
   - TransparentFX
@@ -61,4 +63,7 @@ TagManager:
     locked: 0
   - name: Top
     uniqueID: 1502599955
+    locked: 0
+  - name: Text
+    uniqueID: 2253658001
     locked: 0

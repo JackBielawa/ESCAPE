@@ -67,8 +67,6 @@ namespace IndieMarc.Platformer
             float move_length = Mathf.Min(move.magnitude, 1f);
             move = move.normalized * move_length;
 
-            // Debugging
-            Debug.Log($"[PlayerControlsTwo] Player {player_id}: Move={move}, JumpPress={jump_press}, JumpHold={jump_hold}");
         }
 
         //------ These functions should be called from the Update function, not FixedUpdate
