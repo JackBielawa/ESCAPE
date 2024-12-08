@@ -23,12 +23,15 @@ public class GameState : MonoBehaviour
 
     public Image gameOverOverlay;
     public Image levelCompleteOverlay;
+    public Image gameCompleteOverlay;
     public float fadeSpeed = 0.5f;
 
     private Color overlayColor;
+    private Color wonOverlayColor;
     private float maxAlpha = 120f / 255f;
     public TextMeshProUGUI gameOverTextTMP;
     public TextMeshProUGUI levelCompleteTextTMP;
+    public TextMeshProUGUI gameCompleteTextTMP;
     private Color textColor;
 
     public GameObject Bridge;
@@ -65,19 +68,14 @@ public class GameState : MonoBehaviour
             BackToLevelMenu();
         }
 
-        if (dragonCount == 2)
-        {
 
-            DisplayLevelCompleteScreen();
-
-            BackToLevelMenu();
-        }
         if (dragonCount == 2 && !levelCompleteProcessed)
         {
-            levelCompleteProcessed = true; // Set flag to prevent reprocessing
+            Debug.Log("Level completion detected. Calling UpdateLockedLevels...");
+            levelCompleteProcessed = true;
             UpdateLockedLevels();
-  
         }
+
     }
 
     public void TriggerGameOver()
@@ -119,24 +117,94 @@ public class GameState : MonoBehaviour
         }
     }
 
+    private void DisplayGameCompleteScreen()
+    {
+        if (gameCompleteOverlay != null)
+        {
+            wonOverlayColor = gameCompleteOverlay.color;
+            wonOverlayColor.a = Mathf.Clamp(wonOverlayColor.a + fadeSpeed * Time.deltaTime, 0, maxAlpha);
+            gameCompleteOverlay.color = wonOverlayColor;
+            Debug.Log($"GameComplete Overlay Alpha: {gameCompleteOverlay.color.a}");
+        }
+
+        if (gameCompleteTextTMP != null)
+        {
+            textColor = gameCompleteTextTMP.color;
+            textColor.a = Mathf.Clamp(textColor.a + 2 * fadeSpeed * Time.deltaTime, 0, 1);
+            gameCompleteTextTMP.color = textColor;
+            Debug.Log($"GameComplete Text Alpha: {gameCompleteTextTMP.color.a}");
+        }
+    }
+
+
     public void BackToLevelMenu()
     {
         StartCoroutine(WaitAndLoadScene());
     }
 
+    public void BackToMainMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
+
     private IEnumerator WaitAndLoadScene()
     {
-        yield return new WaitForSeconds(4.0f);
+        // Continuously call the fade-in method until fully visible
+        while (levelCompleteOverlay.color.a < maxAlpha || levelCompleteTextTMP.color.a < 1.0f)
+        {
+            DisplayLevelCompleteScreen(); // Ensure fade continues
+            yield return null; // Wait for the next frame
+        }
+
+        Debug.Log("Level complete screen fully displayed. Transitioning to level menu...");
+        yield return new WaitForSeconds(2.0f); // Optional extra delay for display
         SceneManager.LoadScene(1);
     }
 
+
+    private IEnumerator GameCompleteBackToMenu()
+    {
+        // Continuously call the fade-in method until fully visible
+
+        Debug.Log($"Initial GameComplete Overlay Alpha: {gameCompleteOverlay.color.a}");
+        Debug.Log($"Initial GameComplete Text Alpha: {gameCompleteTextTMP.color.a}");
+
+        while (gameCompleteOverlay.color.a < maxAlpha || gameCompleteTextTMP.color.a < 1.0f)
+        {
+            Debug.Log("Displaying Game Complete Screen...");
+            DisplayGameCompleteScreen(); // Ensure fade continues
+            yield return null; // Wait for the next frame
+        }
+
+        Debug.Log("Game complete screen fully displayed. Transitioning to main menu...");
+        yield return new WaitForSeconds(2.0f); // Optional extra delay for display
+        BackToMainMenu();
+    }
+
+ 
     public void UpdateLockedLevels()
     {
+        // Retrieve the current unlockedCount from PlayerPrefs
+        unlockedCount = PlayerPrefs.GetInt("unlockedCount", 0);
 
+        // Increment the unlockedCount
         unlockedCount++;
         Debug.Log("Updated unlockedCount to: " + unlockedCount);
+
+        // Save the updated unlockedCount back to PlayerPrefs
         PlayerPrefs.SetInt("unlockedCount", unlockedCount);
-        PlayerPrefs.Save();
-            
+        PlayerPrefs.Save(); // Ensure the changes are saved immediately
+
+        if (unlockedCount == 4)
+        {
+            Debug.Log("Game complete detected. Starting GameCompleteBackToMenu...");
+            StartCoroutine(GameCompleteBackToMenu());
+        }
+        else
+        {
+            DisplayLevelCompleteScreen();
+
+            BackToLevelMenu();
+        }
     }
 }
