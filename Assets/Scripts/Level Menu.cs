@@ -73,27 +73,27 @@ public class LevelMenu : MonoBehaviour
 
     public void PlayLevel1Button ()
     {
-        SceneManager.LoadScene(2);
+        SceneManager.LoadScene(3);
     }
 
     public void PlayLevel2Button ()
     {
-        SceneManager.LoadScene(3);
+        SceneManager.LoadScene(4);
     }
 
     public void PlayLevel3Button ()
     {
-        SceneManager.LoadScene(4);
+        SceneManager.LoadScene(5);
     }
 
     public void PlayLevel4Button ()
     {
-        SceneManager.LoadScene(5);
+        SceneManager.LoadScene(6);
     }
 
     public void PlayLevel5Button ()
     {
-        SceneManager.LoadScene(6);
+        SceneManager.LoadScene(7);
     }
 
 
