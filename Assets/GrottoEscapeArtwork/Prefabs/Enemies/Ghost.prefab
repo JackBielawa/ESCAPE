@@ -123,8 +123,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveRange: 2
   moveSpeed: 3
-  PlayerCharacterOne: {fileID: 0}
-  PlayerCharacterTwo: {fileID: 0}
+  playerCharacterOne: {fileID: 0}
+  playerCharacterTwo: {fileID: 0}
   fireballImmunityDuration: 0.1
 --- !u!61 &6792056950231289188
 BoxCollider2D:
