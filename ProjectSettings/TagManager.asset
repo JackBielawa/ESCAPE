@@ -12,6 +12,8 @@ TagManager:
   - Fireball
   - PowerUpTwo
   - PowerUpOne
+  - Bridge
+  - Lever
   layers:
   - Default
   - TransparentFX

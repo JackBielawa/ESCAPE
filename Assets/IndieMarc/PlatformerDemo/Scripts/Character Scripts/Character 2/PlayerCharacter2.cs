@@ -33,10 +33,7 @@ namespace IndieMarc.Platformer
         public bool can_crouch = true;
         public float crouch_coll_percent = 0.5f;
 
-        [Header("Fall Below Level")]
-        public bool reset_when_fall = true;
-        public float fall_pos_y = -5f;
-        public float fall_damage_percent = 0.25f;
+        // Removed "Fall Below Level" fields and logic
 
         [Header("Transformation")]
         public GameObject rectanglePrefab;
@@ -156,12 +153,7 @@ namespace IndieMarc.Platformer
                 ToggleForm();
             }
 
-            // Reset when falling below a certain point
-            if (rigid.position.y < fall_pos_y - GetSize().y)
-            {
-                if (reset_when_fall)
-                    Teleport(last_ground_pos);
-            }
+            // Removed fall-below-level reset code
         }
 
         private void UpdateFacing()
@@ -424,21 +416,18 @@ namespace IndieMarc.Platformer
 
             if (isRectangleForm)
             {
-                // **Transformation into rectangle form**
+                // Transformation into rectangle form
 
-                // Instantiate rectanglePrefab if not already instantiated
                 if (rectangleInstance == null)
                 {
                     rectangleInstance = Instantiate(rectanglePrefab);
-                    rectangleInstance.name = "RectanglePlatform"; // For debugging purposes
+                    rectangleInstance.name = "RectanglePlatform";
                 }
                 else
                 {
-                    // Re-enable rectangleInstance
                     rectangleInstance.SetActive(true);
                 }
 
-                // Position rectangle at Player 2's position
                 rectangleInstance.transform.position = transform.position;
 
                 // Disable Player 2's collider and rigidbody
@@ -454,7 +443,6 @@ namespace IndieMarc.Platformer
                 rectCollider.enabled = true;
                 rectCollider.isTrigger = false;
 
-                // Ensure rectangle is on the "Platform" layer
                 int platformLayerIndex = LayerMask.NameToLayer("Platform");
                 if (platformLayerIndex == -1)
                 {
@@ -465,16 +453,14 @@ namespace IndieMarc.Platformer
                     rectangleInstance.layer = platformLayerIndex;
                 }
 
-                // Add or get Rigidbody2D component and set it to Static
                 Rigidbody2D rectRigid = rectangleInstance.GetComponent<Rigidbody2D>();
                 if (rectRigid == null)
                 {
                     rectRigid = rectangleInstance.AddComponent<Rigidbody2D>();
                 }
                 rectRigid.bodyType = RigidbodyType2D.Static;
-                rectRigid.simulated = true; // Ensure it's simulated
+                rectRigid.simulated = true;
 
-                // Enable rectangleInstance's sprite renderer
                 SpriteRenderer rectSprite = rectangleInstance.GetComponent<SpriteRenderer>();
                 if (rectSprite != null)
                 {
@@ -489,7 +475,7 @@ namespace IndieMarc.Platformer
             }
             else
             {
-                // **Reverting back to normal form**
+                // Reverting back to normal form
 
                 // Re-enable Player 2's collider and rigidbody
                 box_coll.enabled = true;
@@ -501,29 +487,23 @@ namespace IndieMarc.Platformer
                 // Disable rectangleInstance's components
                 if (rectangleInstance != null)
                 {
-                    // Disable rectangle's collider
                     BoxCollider2D rectCollider = rectangleInstance.GetComponent<BoxCollider2D>();
                     if (rectCollider != null)
                     {
                         rectCollider.enabled = false;
                     }
 
-                    // Disable rectangle's rigidbody simulation
                     Rigidbody2D rectRigid = rectangleInstance.GetComponent<Rigidbody2D>();
                     if (rectRigid != null)
                     {
                         rectRigid.simulated = false;
                     }
 
-                    // Disable rectangleInstance's sprite renderer
                     SpriteRenderer rectSprite = rectangleInstance.GetComponent<SpriteRenderer>();
                     if (rectSprite != null)
                     {
                         rectSprite.enabled = false;
                     }
-
-                    // Optionally, keep rectangleInstance active to avoid issues with reactivation
-                    // rectangleInstance.SetActive(false); // Not necessary if components are disabled
                 }
 
                 // Re-enable Player 2's controls
@@ -533,7 +513,6 @@ namespace IndieMarc.Platformer
                 transform.position = rectangleInstance.transform.position;
             }
         }
-
 
         public static PlayerCharacterTwo GetNearest(Vector3 pos, float range = 99999f, bool alive_only = false)
         {

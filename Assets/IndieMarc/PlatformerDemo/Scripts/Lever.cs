@@ -17,19 +17,18 @@ namespace IndieMarc.Platformer
         public Sprite lever_right;
         public Sprite lever_disabled;
 
-        public bool can_be_center; // Determines if the lever can move to the center state
-        public LeverState state;  // Current state of the lever
-        public bool no_return = false; // Prevent the lever from returning to its initial state
-        public bool reset_on_dead = true; // Reset lever state when the player dies
+        public bool can_be_center;
+        public LeverState state;
+        public bool no_return = false;
+        public bool reset_on_dead = true;
 
-        public GameObject Bridge; // The bridge GameObject to activate
-
+        private GameObject Bridge; // We'll find this by tag instead of assigning manually
         private SpriteRenderer render;
-        private LeverState start_state; // The initial state of the lever
-        private LeverState prev_state; // The previous state of the lever
-        private float timer = 0f; // Timer for activation cooldown
+        private LeverState start_state;
+        private LeverState prev_state;
+        private float timer = 0f;
 
-        public UnityAction OnTriggerLever; // Event triggered when the lever is activated
+        public UnityAction OnTriggerLever;
 
         private static List<Lever> levers = new List<Lever>();
 
@@ -41,27 +40,26 @@ namespace IndieMarc.Platformer
 
         void Start()
         {
-            start_state = state; // Preserve the initial state
+            // Find the Bridge by tag
+            Bridge = GameObject.FindGameObjectWithTag("Bridge");
+
+            start_state = state;
             prev_state = state;
 
-            // Ensure the bridge is hidden at the start if the lever is not in an activating state
-            if (state != LeverState.left && state != LeverState.right)
-            {
-                if (Bridge != null)
-                    Bridge.SetActive(false);
-            }
-
-            ChangeSprite(); // Update the sprite based on the lever's initial state
+            // Ensure the bridge state matches the lever's initial state
+            UpdateBridgeState();
+            ChangeSprite();
         }
 
         void Update()
         {
             timer += Time.deltaTime;
 
-            // Check if the state has changed and update the sprite
+            // If the state has changed, update the sprite and bridge visibility
             if (state != prev_state)
             {
                 ChangeSprite();
+                UpdateBridgeState();
                 prev_state = state;
             }
         }
@@ -73,7 +71,7 @@ namespace IndieMarc.Platformer
 
         void OnTriggerEnter2D(Collider2D coll)
         {
-            // Check if the collision is with a player character and activate the lever
+            // Check if collided with a player and then activate the lever
             if (coll.gameObject.GetComponent<PlayerCharacterOne>() || coll.gameObject.GetComponent<PlayerCharacterTwo>())
             {
                 if (state == LeverState.disabled)
@@ -85,15 +83,14 @@ namespace IndieMarc.Platformer
 
         public void Activate()
         {
-            // Prevent rapid reactivation
             if (timer < 0f)
                 return;
 
             if (!no_return || state == start_state)
             {
-                timer = -0.8f; // Set cooldown timer
+                timer = -0.8f; // cooldown
 
-                // Change the state of the lever
+                // Cycle through states
                 if (state == LeverState.left)
                 {
                     state = (can_be_center) ? LeverState.center : LeverState.right;
@@ -107,29 +104,19 @@ namespace IndieMarc.Platformer
                     state = LeverState.left;
                 }
 
-                // Play lever activation sound
-                GetComponent<AudioSource>().Play();
+                // Play lever sound if available
+                AudioSource audio = GetComponent<AudioSource>();
+                if (audio != null)
+                    audio.Play();
 
-                // Invoke the lever trigger event
+                // Trigger event
                 OnTriggerLever?.Invoke();
-
-                // Handle bridge activation
-                if (state == LeverState.left || state == LeverState.right)
-                {
-                    if (Bridge != null)
-                        Bridge.SetActive(true);
-                }
-                else
-                {
-                    if (Bridge != null)
-                        Bridge.SetActive(false);
-                }
             }
         }
 
         private void ChangeSprite()
         {
-            // Update the sprite based on the lever's current state
+            // Change the lever's sprite based on its current state
             if (state == LeverState.left)
             {
                 render.sprite = lever_left;
@@ -147,27 +134,32 @@ namespace IndieMarc.Platformer
                 render.sprite = lever_disabled;
             }
 
-            // Disable sprite if `no_return` is true and the lever is not in its starting state
+            // If no_return is true and we've moved from the start state, disable sprite
             if (no_return && state != start_state)
             {
                 render.sprite = lever_disabled;
             }
         }
 
+        private void UpdateBridgeState()
+        {
+            // If no bridge found, just skip
+            if (Bridge == null)
+                return;
+
+            // Bridge should be visible only if the lever is in left or right state
+            bool shouldShow = (state == LeverState.left || state == LeverState.right);
+
+            // Activate or deactivate the bridge accordingly
+            Bridge.SetActive(shouldShow);
+        }
+
         public void ResetOne()
         {
-            // Reset the lever to its starting state if configured to do so on death
             if (reset_on_dead)
             {
                 state = start_state;
-
-                // Ensure the bridge is hidden if the lever resets to a non-activating state
-                if (state != LeverState.left && state != LeverState.right)
-                {
-                    if (Bridge != null)
-                        Bridge.SetActive(false);
-                }
-
+                UpdateBridgeState();
                 ChangeSprite();
             }
         }

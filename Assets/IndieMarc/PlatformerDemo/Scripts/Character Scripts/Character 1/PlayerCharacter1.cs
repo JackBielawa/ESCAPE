@@ -18,14 +18,14 @@ namespace IndieMarc.Platformer
         public bool invulnerable = false;
 
         [Header("Movement")]
-        public float move_accel = 50f; // Increased acceleration
-        public float move_deccel = 50f; // Increased deceleration
+        public float move_accel = 50f;
+        public float move_deccel = 50f;
         public float move_max = 5f;
 
         [Header("Jump")]
         public bool can_jump = true;
         public bool double_jump = true;
-        public float jump_strength = 10f; // Increased jump strength for better upward flow
+        public float jump_strength = 10f;
         public LayerMask ground_layer;
         public float ground_raycast_dist = 0.1f;
 
@@ -33,10 +33,7 @@ namespace IndieMarc.Platformer
         public bool can_crouch = true;
         public float crouch_coll_percent = 0.5f;
 
-        [Header("Fall Below Level")]
-        public bool reset_when_fall = true;
-        public float fall_pos_y = -5f;
-        public float fall_damage_percent = 0.25f;
+        // Removed "Fall Below Level" fields and logic
 
         [Header("Shooting")]
         public bool can_shoot = false;
@@ -100,7 +97,6 @@ namespace IndieMarc.Platformer
                 GameObject firePointObject = new GameObject("FirePoint");
                 firePointObject.transform.parent = transform;
                 firePoint = firePointObject.transform;
-
                 firePoint.localPosition = new Vector3(0.5f, 0, 0);
             }
 
@@ -129,8 +125,7 @@ namespace IndieMarc.Platformer
                 float accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? move_accel : move_deccel;
                 accelRate = !is_grounded ? accelRate * 0.5f : accelRate; // Reduced air control
 
-                float movement = speedDiff * accelRate * Time.fixedDeltaTime; // Adjusted for frame rate
-
+                float movement = speedDiff * accelRate * Time.fixedDeltaTime;
                 rigid.AddForce(new Vector2(movement, 0));
 
                 UpdateFacing();
@@ -163,12 +158,7 @@ namespace IndieMarc.Platformer
                 ShootFireball();
             }
 
-            // Reset when falling below a certain point
-            if (rigid.position.y < fall_pos_y - GetSize().y)
-            {
-                if (reset_when_fall)
-                    Teleport(last_ground_pos);
-            }
+            // Removed fall-below-level reset code
         }
 
         public void EnableShooting()
@@ -186,7 +176,6 @@ namespace IndieMarc.Platformer
             if (fireballPrefab != null && firePoint != null)
             {
                 Vector3 spawnPosition = rigid.position + new Vector2(facingRight ? 0.5f : -0.5f, 0);
-
                 Quaternion spawnRotation = facingRight ? Quaternion.identity : Quaternion.Euler(0, 180, 0);
 
                 GameObject fireball = Instantiate(fireballPrefab, spawnPosition, spawnRotation);
@@ -208,7 +197,6 @@ namespace IndieMarc.Platformer
             {
                 facingRight = move_input.x > 0f;
                 float side = facingRight ? 1f : -1f;
-
                 transform.localScale = new Vector3(start_scale.x * side, start_scale.y, start_scale.z);
 
                 if (firePoint != null)
@@ -222,11 +210,8 @@ namespace IndieMarc.Platformer
         private void UpdateJump()
         {
             was_grounded = is_grounded;
-
-            // Detect if the character is grounded
             is_grounded = DetectGrounded();
 
-            // Reset jump variables when grounded
             if (is_grounded)
             {
                 is_jumping = false;
@@ -236,21 +221,18 @@ namespace IndieMarc.Platformer
             // Adjust gravity for smoother jump
             if (rigid.velocity.y > 0.1f && !jump_hold)
             {
-                // Apply higher gravity when player releases jump early
                 rigid.gravityScale = 3f;
             }
             else if (rigid.velocity.y < -0.1f)
             {
-                // Apply higher gravity when falling
                 rigid.gravityScale = 3f;
             }
             else
             {
-                // Normal gravity
                 rigid.gravityScale = 1f;
             }
 
-            // Update grounded position and save the last valid grounded position
+            // Update last grounded position
             if (is_grounded)
             {
                 average_ground_pos = Vector2.Lerp(rigid.position, average_ground_pos, 0.5f);

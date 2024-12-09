@@ -12,9 +12,10 @@ GameObject:
   - component: {fileID: 1750266085039535168}
   - component: {fileID: 2303546006365073254}
   - component: {fileID: 1199868528235098033}
+  - component: {fileID: -7003904940917362818}
   m_Layer: 31
   m_Name: Bridge
-  m_TagString: Untagged
+  m_TagString: Bridge
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -159,3 +160,24 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
+--- !u!114 &-7003904940917362818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7072029197895798898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 755ecac09c1a1b84cb565d5c02636242, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lever_center: {fileID: 0}
+  lever_left: {fileID: 0}
+  lever_right: {fileID: 0}
+  lever_disabled: {fileID: 0}
+  can_be_center: 0
+  state: 0
+  no_return: 0
+  reset_on_dead: 1
+  Bridge: {fileID: 7072029197895798898}
