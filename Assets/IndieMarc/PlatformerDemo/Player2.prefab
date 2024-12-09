@@ -160,7 +160,7 @@ MonoBehaviour:
   move_max: 30
   can_jump: 1
   double_jump: 0
-  jump_strength: 12
+  jump_strength: 15
   ground_layer:
     serializedVersion: 2
     m_Bits: 2147487744
