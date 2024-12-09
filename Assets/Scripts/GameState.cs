@@ -1,42 +1,48 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 
 using IndieMarc.Platformer;
+
 public class GameState : MonoBehaviour
 {
+    // Player references
     private PlayerCharacterOne player1;
     private PlayerCharacterTwo player2;
 
+    // Track collected dragons and unlocked levels
     public int dragonCount;
-
     public int unlockedCount;
 
+    // State tracking
     private bool player1dead = false;
     private bool player2dead = false;
-
     private bool gameOver = false;
+    private bool levelCompleteProcessed = false;
+    private bool gameCompleteTriggered = false;
 
+    // UI elements and fade parameters
     public Image gameOverOverlay;
     public Image levelCompleteOverlay;
     public Image gameCompleteOverlay;
     public float fadeSpeed = 0.5f;
-
-    private Color overlayColor;
-    private Color wonOverlayColor;
     private float maxAlpha = 120f / 255f;
+
+    // TMP Text references
     public TextMeshProUGUI gameOverTextTMP;
     public TextMeshProUGUI levelCompleteTextTMP;
     public TextMeshProUGUI gameCompleteTextTMP;
-    private Color textColor;
 
+    // Bridge and other elements
     public GameObject Bridge;
 
-    private bool levelCompleteProcessed = false; // New flag to track level completion
+    // Internal color trackers
+    private Color overlayColor;
+    private Color textColor;
+    private Color wonOverlayColor;
 
     void Start()
     {
@@ -45,44 +51,46 @@ public class GameState : MonoBehaviour
 
         dragonCount = 0;
         gameOver = false;
+        levelCompleteProcessed = false;
+        gameCompleteTriggered = false;
 
         Bridge.SetActive(false);
     }
 
     void Update()
     {
+        // Check if any player is dead
         if (player1 != null && player1.is_dead)
             player1dead = true;
-
         if (player2 != null && player2.is_dead)
             player2dead = true;
 
-        if (player1dead || player2dead)
+        // If either player is dead -> game over
+        if ((player1dead || player2dead) && !gameOver && !levelCompleteProcessed && !gameCompleteTriggered)
         {
             gameOver = true;
+            StartCoroutine(GameOverSequence());
         }
 
-        if (gameOver)
+        // If all dragons collected and not processed yet -> level complete
+        if (dragonCount == 2 && !levelCompleteProcessed && !gameOver && !gameCompleteTriggered)
         {
-            DisplayGameOverScreen();
-            BackToLevelMenu();
-        }
-
-
-        if (dragonCount == 2 && !levelCompleteProcessed)
-        {
-            Debug.Log("Level completion detected. Calling UpdateLockedLevels...");
             levelCompleteProcessed = true;
             UpdateLockedLevels();
         }
-
     }
 
+    // Public method to trigger Game Over
     public void TriggerGameOver()
     {
-        gameOver = true;
+        if (!levelCompleteProcessed && !gameCompleteTriggered)
+        {
+            gameOver = true;
+            StartCoroutine(GameOverSequence());
+        }
     }
 
+    // Display and fade-in the Game Over screen
     private void DisplayGameOverScreen()
     {
         if (gameOverOverlay != null)
@@ -100,6 +108,7 @@ public class GameState : MonoBehaviour
         }
     }
 
+    // Display and fade-in the Level Complete screen
     private void DisplayLevelCompleteScreen()
     {
         if (levelCompleteOverlay != null)
@@ -117,6 +126,7 @@ public class GameState : MonoBehaviour
         }
     }
 
+    // Display and fade-in the Game Complete screen
     private void DisplayGameCompleteScreen()
     {
         if (gameCompleteOverlay != null)
@@ -124,7 +134,6 @@ public class GameState : MonoBehaviour
             wonOverlayColor = gameCompleteOverlay.color;
             wonOverlayColor.a = Mathf.Clamp(wonOverlayColor.a + fadeSpeed * Time.deltaTime, 0, maxAlpha);
             gameCompleteOverlay.color = wonOverlayColor;
-            Debug.Log($"GameComplete Overlay Alpha: {gameCompleteOverlay.color.a}");
         }
 
         if (gameCompleteTextTMP != null)
@@ -132,79 +141,86 @@ public class GameState : MonoBehaviour
             textColor = gameCompleteTextTMP.color;
             textColor.a = Mathf.Clamp(textColor.a + 2 * fadeSpeed * Time.deltaTime, 0, 1);
             gameCompleteTextTMP.color = textColor;
-            Debug.Log($"GameComplete Text Alpha: {gameCompleteTextTMP.color.a}");
         }
     }
 
+    // Called when all dragons are collected
+    public void UpdateLockedLevels()
+    {
+        // Update unlock count
+        unlockedCount = PlayerPrefs.GetInt("unlockedCount", 0);
+        unlockedCount++;
+        PlayerPrefs.SetInt("unlockedCount", unlockedCount);
+        PlayerPrefs.Save();
 
+        // If all levels are unlocked -> game complete
+        if (unlockedCount == 4)
+        {
+            gameCompleteTriggered = true;
+            StartCoroutine(GameCompleteSequence());
+        }
+        else
+        {
+            // Show level complete sequence and then back to level menu
+            StartCoroutine(LevelCompleteSequence());
+        }
+    }
+
+    // Coroutine for Game Over scenario
+    private IEnumerator GameOverSequence()
+    {
+        // Fade in the game over screen until fully visible
+        while ((gameOverOverlay != null && gameOverOverlay.color.a < maxAlpha)
+               || (gameOverTextTMP != null && gameOverTextTMP.color.a < 1.0f))
+        {
+            DisplayGameOverScreen();
+            yield return null;
+        }
+
+        // Wait a bit before going back to the level selection scene
+        yield return new WaitForSeconds(2.0f);
+        BackToLevelMenu();
+    }
+
+    // Coroutine for Level Complete scenario
+    private IEnumerator LevelCompleteSequence()
+    {
+        // Fade in the level complete screen until fully visible
+        while ((levelCompleteOverlay != null && levelCompleteOverlay.color.a < maxAlpha)
+               || (levelCompleteTextTMP != null && levelCompleteTextTMP.color.a < 1.0f))
+        {
+            DisplayLevelCompleteScreen();
+            yield return null;
+        }
+
+        // Wait a bit before going back to level select
+        yield return new WaitForSeconds(2.0f);
+        BackToLevelMenu();
+    }
+
+    // Coroutine for Game Complete scenario
+    private IEnumerator GameCompleteSequence()
+    {
+        while ((gameCompleteOverlay != null && gameCompleteOverlay.color.a < maxAlpha)
+               || (gameCompleteTextTMP != null && gameCompleteTextTMP.color.a < 1.0f))
+        {
+            DisplayGameCompleteScreen();
+            yield return null;
+        }
+
+        // Wait a bit and then back to main menu
+        yield return new WaitForSeconds(2.0f);
+        BackToMainMenu();
+    }
+
+    // Methods to load scenes
     public void BackToLevelMenu()
     {
-        StartCoroutine(WaitAndLoadScene());
+        SceneManager.LoadScene(1); // Assuming Scene 1 is the level selection scene
     }
 
     public void BackToMainMenu()
     {
-        SceneManager.LoadScene(0);
-    }
-
-    private IEnumerator WaitAndLoadScene()
-    {
-        // Continuously call the fade-in method until fully visible
-        while (levelCompleteOverlay.color.a < maxAlpha || levelCompleteTextTMP.color.a < 1.0f)
-        {
-            DisplayLevelCompleteScreen(); // Ensure fade continues
-            yield return null; // Wait for the next frame
-        }
-
-        Debug.Log("Level complete screen fully displayed. Transitioning to level menu...");
-        yield return new WaitForSeconds(2.0f); // Optional extra delay for display
-        SceneManager.LoadScene(1);
-    }
-
-
-    private IEnumerator GameCompleteBackToMenu()
-    {
-        // Continuously call the fade-in method until fully visible
-
-        Debug.Log($"Initial GameComplete Overlay Alpha: {gameCompleteOverlay.color.a}");
-        Debug.Log($"Initial GameComplete Text Alpha: {gameCompleteTextTMP.color.a}");
-
-        while (gameCompleteOverlay.color.a < maxAlpha || gameCompleteTextTMP.color.a < 1.0f)
-        {
-            Debug.Log("Displaying Game Complete Screen...");
-            DisplayGameCompleteScreen(); // Ensure fade continues
-            yield return null; // Wait for the next frame
-        }
-
-        Debug.Log("Game complete screen fully displayed. Transitioning to main menu...");
-        yield return new WaitForSeconds(2.0f); // Optional extra delay for display
-        BackToMainMenu();
-    }
-
- 
-    public void UpdateLockedLevels()
-    {
-        // Retrieve the current unlockedCount from PlayerPrefs
-        unlockedCount = PlayerPrefs.GetInt("unlockedCount", 0);
-
-        // Increment the unlockedCount
-        unlockedCount++;
-        Debug.Log("Updated unlockedCount to: " + unlockedCount);
-
-        // Save the updated unlockedCount back to PlayerPrefs
-        PlayerPrefs.SetInt("unlockedCount", unlockedCount);
-        PlayerPrefs.Save(); // Ensure the changes are saved immediately
-
-        if (unlockedCount == 4)
-        {
-            Debug.Log("Game complete detected. Starting GameCompleteBackToMenu...");
-            StartCoroutine(GameCompleteBackToMenu());
-        }
-        else
-        {
-            DisplayLevelCompleteScreen();
-
-            BackToLevelMenu();
-        }
+        SceneManager.LoadScene(0); // Assuming Scene 0 is the main menu
     }
 }
