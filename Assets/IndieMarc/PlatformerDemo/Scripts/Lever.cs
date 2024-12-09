@@ -1,174 +1,58 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
+﻿using UnityEngine;
 
 namespace IndieMarc.Platformer
 {
-    public enum LeverState
-    {
-        left, center, right, disabled
-    }
-
+    [RequireComponent(typeof(SpriteRenderer))]
+    [RequireComponent(typeof(BoxCollider2D))]
     public class Lever : MonoBehaviour
     {
-        public Sprite lever_center;
-        public Sprite lever_left;
-        public Sprite lever_right;
-        public Sprite lever_disabled;
+        public Sprite leverLeft;
+        public Sprite leverRight;
 
-        public bool can_be_center;
-        public LeverState state;
-        public bool no_return = false;
-        public bool reset_on_dead = true;
-
-        private GameObject Bridge; // We'll find this by tag instead of assigning manually
-        private SpriteRenderer render;
-        private LeverState start_state;
-        private LeverState prev_state;
-        private float timer = 0f;
-
-        public UnityAction OnTriggerLever;
-
-        private static List<Lever> levers = new List<Lever>();
-
-        private void Awake()
-        {
-            levers.Add(this);
-            render = GetComponent<SpriteRenderer>();
-        }
+        private SpriteRenderer spriteRenderer;
+        private BoxCollider2D boxCollider;
+        private LeverState state = LeverState.Left;
+        private Bridge bridgeToActivate;
 
         void Start()
         {
-            // Find the Bridge by tag
-            Bridge = GameObject.FindGameObjectWithTag("Bridge");
+            spriteRenderer = GetComponent<SpriteRenderer>();
+            boxCollider = GetComponent<BoxCollider2D>();
+            boxCollider.isTrigger = true;
+            spriteRenderer.sprite = leverLeft;
 
-            start_state = state;
-            prev_state = state;
-
-            // Ensure the bridge state matches the lever's initial state
-            UpdateBridgeState();
-            ChangeSprite();
-        }
-
-        void Update()
-        {
-            timer += Time.deltaTime;
-
-            // If the state has changed, update the sprite and bridge visibility
-            if (state != prev_state)
+            // Find the bridge by tag
+            GameObject bridgeObj = GameObject.FindGameObjectWithTag("Bridge");
+            if (bridgeObj != null)
             {
-                ChangeSprite();
-                UpdateBridgeState();
-                prev_state = state;
-            }
-        }
-
-        private void OnDestroy()
-        {
-            levers.Remove(this);
-        }
-
-        void OnTriggerEnter2D(Collider2D coll)
-        {
-            // Check if collided with a player and then activate the lever
-            if (coll.gameObject.GetComponent<PlayerCharacterOne>() || coll.gameObject.GetComponent<PlayerCharacterTwo>())
-            {
-                if (state == LeverState.disabled)
-                    return;
-
-                Activate();
-            }
-        }
-
-        public void Activate()
-        {
-            if (timer < 0f)
-                return;
-
-            if (!no_return || state == start_state)
-            {
-                timer = -0.8f; // cooldown
-
-                // Cycle through states
-                if (state == LeverState.left)
+                bridgeToActivate = bridgeObj.GetComponent<Bridge>();
+                if (bridgeToActivate == null)
                 {
-                    state = (can_be_center) ? LeverState.center : LeverState.right;
+                    Debug.LogError("Bridge object found but missing Bridge component!");
                 }
-                else if (state == LeverState.center)
-                {
-                    state = LeverState.right;
-                }
-                else if (state == LeverState.right)
-                {
-                    state = LeverState.left;
-                }
-
-                // Play lever sound if available
-                AudioSource audio = GetComponent<AudioSource>();
-                if (audio != null)
-                    audio.Play();
-
-                // Trigger event
-                OnTriggerLever?.Invoke();
+            }
+            else
+            {
+                Debug.LogError("No object with Bridge tag found!");
             }
         }
 
-        private void ChangeSprite()
+        void OnTriggerEnter2D(Collider2D collider)
         {
-            // Change the lever's sprite based on its current state
-            if (state == LeverState.left)
+            if (collider.CompareTag("Player") || collider.CompareTag("PlayerTwo"))
             {
-                render.sprite = lever_left;
-            }
-            else if (state == LeverState.center)
-            {
-                render.sprite = lever_center;
-            }
-            else if (state == LeverState.right)
-            {
-                render.sprite = lever_right;
-            }
-            else if (state == LeverState.disabled)
-            {
-                render.sprite = lever_disabled;
-            }
-
-            // If no_return is true and we've moved from the start state, disable sprite
-            if (no_return && state != start_state)
-            {
-                render.sprite = lever_disabled;
+                ToggleLever();
             }
         }
 
-        private void UpdateBridgeState()
+        private void ToggleLever()
         {
-            // If no bridge found, just skip
-            if (Bridge == null)
-                return;
+            state = state == LeverState.Left ? LeverState.Right : LeverState.Left;
+            spriteRenderer.sprite = state == LeverState.Left ? leverLeft : leverRight;
 
-            // Bridge should be visible only if the lever is in left or right state
-            bool shouldShow = (state == LeverState.left || state == LeverState.right);
-
-            // Activate or deactivate the bridge accordingly
-            Bridge.SetActive(shouldShow);
-        }
-
-        public void ResetOne()
-        {
-            if (reset_on_dead)
+            if (bridgeToActivate != null)
             {
-                state = start_state;
-                UpdateBridgeState();
-                ChangeSprite();
-            }
-        }
-
-        public static void ResetAll()
-        {
-            foreach (Lever lever in levers)
-            {
-                lever.ResetOne();
+                bridgeToActivate.SetActive(state == LeverState.Right);
             }
         }
     }

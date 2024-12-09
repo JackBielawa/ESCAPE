@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class GameInitializer : MonoBehaviour
 {
-    private static bool initialized = false; // Static variable to ensure it only runs once
-
     void Awake()
     {
         if (!PlayerPrefs.HasKey("unlockedCount"))
@@ -15,5 +13,4 @@ public class GameInitializer : MonoBehaviour
             Debug.Log("Initialized unlockedCount to 0");
         }
     }
-
 }

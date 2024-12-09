@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using IndieMarc.Platformer; // Add this
 
 public class Fireball : MonoBehaviour
 {

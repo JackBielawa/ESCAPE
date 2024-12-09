@@ -169,9 +169,6 @@ MonoBehaviour:
   ground_raycast_dist: 0.2
   can_crouch: 1
   crouch_coll_percent: 0.5
-  reset_when_fall: 1
-  fall_pos_y: -5
-  fall_damage_percent: 0.25
   can_shoot: 0
   fireballPrefab: {fileID: 162026, guid: 7e29bfda6ae9b41179eef7f4860e49ac, type: 3}
   firePoint: {fileID: 4237051928039116}

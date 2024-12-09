@@ -12,7 +12,9 @@ GameObject:
   - component: {fileID: 1750266085039535168}
   - component: {fileID: 2303546006365073254}
   - component: {fileID: 1199868528235098033}
-  - component: {fileID: -7003904940917362818}
+  - component: {fileID: -1065333044766740089}
+  - component: {fileID: -2368985812107786600}
+  - component: {fileID: 5695006232448684237}
   m_Layer: 31
   m_Name: Bridge
   m_TagString: Bridge
@@ -30,7 +32,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 4.9899, y: 12.822, z: 0}
-  m_LocalScale: {x: 7.972487, y: 0.28399464, z: 1}
+  m_LocalScale: {x: 15, y: 0.28399464, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -73,12 +75,12 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 5
+  m_SortingLayerID: 1502599955
+  m_SortingLayer: 5
+  m_SortingOrder: 50
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6,
     type: 3}
-  m_Color: {r: 0.3962264, g: 0.20990655, b: 0.088964, a: 1}
+  m_Color: {r: 0.2924528, g: 0.16766839, b: 0.020692414, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -160,7 +162,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
---- !u!114 &-7003904940917362818
+--- !u!114 &-1065333044766740089
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -169,15 +171,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 7072029197895798898}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 755ecac09c1a1b84cb565d5c02636242, type: 3}
+  m_Script: {fileID: 11500000, guid: 04d3a34bd487c4347ad87941da15d493, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lever_center: {fileID: 0}
-  lever_left: {fileID: 0}
-  lever_right: {fileID: 0}
-  lever_disabled: {fileID: 0}
-  can_be_center: 0
-  state: 0
-  no_return: 0
-  reset_on_dead: 1
-  Bridge: {fileID: 7072029197895798898}
+--- !u!114 &-2368985812107786600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7072029197895798898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04d3a34bd487c4347ad87941da15d493, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5695006232448684237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7072029197895798898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04d3a34bd487c4347ad87941da15d493, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -393,6 +393,7 @@ namespace IndieMarc.Platformer
                     gameObject.SetActive(false);
                     UpdateDragonCount();
                 }
+
             }
         }
 
