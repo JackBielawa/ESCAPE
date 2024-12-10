@@ -89,6 +89,7 @@ public class GameState : MonoBehaviour
             gameOver = true;
         }
 
+
         if (gameOver && !gameOverSequenceStarted)
         {
             gameOverSequenceStarted = true;
@@ -256,7 +257,8 @@ public class GameState : MonoBehaviour
         PlayerPrefs.SetInt("unlockedCount", unlockedCount);
         PlayerPrefs.Save();
 
-        if (unlockedCount == 3)
+        /*
+        if (unlockedCount == 5)
         {
             Debug.Log("Game complete detected. Starting GameCompleteBackToMenu...");
             StartCoroutine(GameCompleteBackToMenu());
@@ -266,6 +268,10 @@ public class GameState : MonoBehaviour
             DisplayLevelCompleteScreen();
             BackToLevelMenu();
         }
+        */
+        DisplayLevelCompleteScreen();
+        BackToLevelMenu();
+
     }
 
     public void RestartButton()

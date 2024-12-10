@@ -49,6 +49,17 @@ public class LevelMenu : MonoBehaviour
                 Debug.LogError("level3Object is not assigned in the Inspector!");
             }
         }
+        if (unlockedCount >= 3)
+        {
+            if (level4Object != null)
+            {
+                level4Object.SetActive(true);
+            }
+            else
+            {
+                Debug.LogError("level4Object is not assigned in the Inspector!");
+            }
+        }
     }
 
     void Update()
