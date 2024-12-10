@@ -730,12 +730,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "It is your job to help Blue and Red ESCAPE from the Scary Caves!\nUse
-    WASD to control blue character \nUse Arrow Keys to control red character\nHold
-    W and Up Arrow to jump higher but remember that blue character jumps higher than
-    red\nCollect each player's poweup to help you get past long jumps and shooting
-    the ghosts\nRed shoots fireballs at the ghosts \nBlue turns into a platform that
-    red can use to get across longer and higher jumps\n\n\n\n"
+  m_text: "Congrats!\nYou escaped the cave. You must posses some skills that\nwe
+    haven't seen in generations.\n\nPress the Restart button to play again or \nclose
+    out of the browser.\n\n\n\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
