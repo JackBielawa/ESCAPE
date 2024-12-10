@@ -49,18 +49,6 @@ public class LevelMenu : MonoBehaviour
                 Debug.LogError("level3Object is not assigned in the Inspector!");
             }
         }
-        if (unlockedCount >= 3)
-        {
-            if (level4Object != null)
-            {
-                level4Object.SetActive(true);
-                level4Lock.SetActive(false);
-            }
-            else
-            {
-                Debug.LogError("level4Object is not assigned in the Inspector!");
-            }
-        }
     }
 
     void Update()
@@ -68,40 +56,44 @@ public class LevelMenu : MonoBehaviour
 
     }
 
-    public void MainMenuButton ()
+    public void MainMenuButton()
     {
         SceneManager.LoadScene(0);
     }
 
-    public void PlayLevel1Button ()
+    public void PlayLevel1Button()
     {
         SceneManager.LoadScene(3);
     }
 
-    public void PlayLevel2Button ()
+    public void PlayLevel2Button()
     {
         SceneManager.LoadScene(4);
     }
 
-    public void PlayLevel3Button ()
+    public void PlayLevel3Button()
     {
         SceneManager.LoadScene(5);
     }
 
-    public void ContinueButton ()
+    public void ContinueButton()
     {
         SceneManager.LoadScene(2);
     }
 
-    public void NextContinueButton ()
+    public void NextContinueButton()
     {
         SceneManager.LoadScene(6);
     }
 
-    public void LoreRestartButton ()
+    public void LoreRestartButton()
     {
         SceneManager.LoadScene(0);
     }
 
-
+    // New method to return to the level menu (scene index 2)
+    public void LevelMenuButton()
+    {
+        SceneManager.LoadScene(2);
+    }
 }

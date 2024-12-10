@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 5419548280135445500}
   m_Layer: 0
   m_Name: Bat
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -168,7 +168,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: -0.009076152}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -179,7 +179,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.16, y: 0.16}
+  m_Size: {x: 0.16, y: 0.12369534}
   m_EdgeRadius: 0
 --- !u!114 &5419548280135445500
 MonoBehaviour:
@@ -197,5 +197,6 @@ MonoBehaviour:
   moveSpeed: 3
   fireballPrefab: {fileID: 162026, guid: 7e29bfda6ae9b41179eef7f4860e49ac, type: 3}
   fireballSpeed: 5
-  shootInterval: 1
-  shootRange: 8
+  initialShootDelay: 0.1
+  shootInterval: 0.1
+  shootRange: 10

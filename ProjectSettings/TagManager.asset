@@ -14,6 +14,8 @@ TagManager:
   - PowerUpOne
   - Bridge
   - Lever
+  - Bat
+  - LevelMenu
   layers:
   - Default
   - TransparentFX

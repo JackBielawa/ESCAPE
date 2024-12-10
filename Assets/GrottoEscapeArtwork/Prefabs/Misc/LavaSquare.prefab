@@ -11,7 +11,9 @@ GameObject:
   - component: {fileID: 2891282142307190704}
   - component: {fileID: 7244688693046019563}
   - component: {fileID: 3362657017258313695}
-  m_Layer: 0
+  - component: {fileID: 7354728704362781431}
+  - component: {fileID: -5908868986540028139}
+  m_Layer: 31
   m_Name: LavaSquare
   m_TagString: LavaSquare
   m_Icon: {fileID: 0}
@@ -131,3 +133,42 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1.0029408, y: 0.32240236}
   m_EdgeRadius: 0
+--- !u!50 &7354728704362781431
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6193437766700203918}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
+--- !u!114 &-5908868986540028139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6193437766700203918}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7ee618e3c82d499095a62041cd6be4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
