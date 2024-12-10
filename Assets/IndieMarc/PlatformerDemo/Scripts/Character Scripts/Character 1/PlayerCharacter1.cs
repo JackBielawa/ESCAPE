@@ -75,6 +75,8 @@ namespace IndieMarc.Platformer
 
         private static Dictionary<int, PlayerCharacterOne> character_list = new Dictionary<int, PlayerCharacterOne>();
 
+        private bool gate;
+
         void Awake()
         {
             character_list[player_id] = this;
@@ -101,6 +103,8 @@ namespace IndieMarc.Platformer
             }
 
             is_dead = false;
+
+            gate = false;
         }
 
         void OnDestroy()
@@ -442,9 +446,11 @@ namespace IndieMarc.Platformer
         void UpdateDragonCount()
         {
             GameState gameState = FindObjectOfType<GameState>();
-            if (gameState != null)
+            if (gameState != null && gate == false)
             {
                 gameState.dragonCount++;
+                Debug.Log("dragonCount: " + gameState.dragonCount);
+                gate = true;
             }
             else
             {

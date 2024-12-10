@@ -107,10 +107,10 @@ namespace IndieMarc.Platformer
         private IEnumerator TemporaryImmunityToFireball()
         {
             isImmuneToFireball = true;
-            Debug.Log("[Ghost] Immune to fireball for a short time.");
+            //Debug.Log("[Ghost] Immune to fireball for a short time.");
             yield return new WaitForSeconds(fireballImmunityDuration);
             isImmuneToFireball = false;
-            Debug.Log("[Ghost] Vulnerable to fireball.");
+            //Debug.Log("[Ghost] Vulnerable to fireball.");
         }
     }
 }

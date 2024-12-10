@@ -17,49 +17,51 @@ public class LevelMenu : MonoBehaviour
 
     private int unlockedCount;
     void Start()
-{
-    // Retrieve unlockedCount from PlayerPrefs, with a default value of 0
-    unlockedCount = PlayerPrefs.GetInt("unlockedCount", 0);
-    Debug.Log("unlockedCount retrieved: " + unlockedCount);
+    {
+        // Retrieve unlockedCount from PlayerPrefs, with a default value of 0
+        unlockedCount = PlayerPrefs.GetInt("unlockedCount", 0);
+        Debug.Log("unlockedCount retrieved: " + unlockedCount);
 
-    // Unlock levels based on unlockedCount
-    if (unlockedCount >= 1)
-    {
-        if (level2Object != null)
+        level4Object.SetActive(false);
+
+        // Unlock levels based on unlockedCount
+        if (unlockedCount >= 1)
         {
-            level2Object.SetActive(true);
-            level2Lock.SetActive(false);
+            if (level2Object != null)
+            {
+                level2Object.SetActive(true);
+                level2Lock.SetActive(false);
+            }
+            else
+            {
+                Debug.LogError("level2Object is not assigned in the Inspector!");
+            }
         }
-        else
+        if (unlockedCount >= 2)
         {
-            Debug.LogError("level2Object is not assigned in the Inspector!");
+            if (level3Object != null)
+            {
+                level3Object.SetActive(true);
+                level3Lock.SetActive(false);
+            }
+            else
+            {
+                Debug.LogError("level3Object is not assigned in the Inspector!");
+            }
+        }
+        if (unlockedCount >= 3)
+        {
+            if (level4Object != null)
+            {
+                level4Object.SetActive(true);
+                level4Lock.SetActive(false);
+            }
+            else
+            {
+                Debug.LogError("level4Object is not assigned in the Inspector!");
+            }
         }
     }
-    if (unlockedCount >= 2)
-    {
-        if (level3Object != null)
-        {
-            level3Object.SetActive(true);
-            level3Lock.SetActive(false);
-        }
-        else
-        {
-            Debug.LogError("level3Object is not assigned in the Inspector!");
-        }
-    }
-    if (unlockedCount >= 3)
-    {
-        if (level4Object != null)
-        {
-            level4Object.SetActive(true);
-            level4Lock.SetActive(false);
-        }
-        else
-        {
-            Debug.LogError("level4Object is not assigned in the Inspector!");
-        }
-    }
-}
 
     void Update()
     {
@@ -86,14 +88,19 @@ public class LevelMenu : MonoBehaviour
         SceneManager.LoadScene(5);
     }
 
-    public void PlayLevel4Button ()
+    public void ContinueButton ()
+    {
+        SceneManager.LoadScene(2);
+    }
+
+    public void NextContinueButton ()
     {
         SceneManager.LoadScene(6);
     }
 
-    public void PlayLevel5Button ()
+    public void LoreRestartButton ()
     {
-        SceneManager.LoadScene(7);
+        SceneManager.LoadScene(0);
     }
 
 

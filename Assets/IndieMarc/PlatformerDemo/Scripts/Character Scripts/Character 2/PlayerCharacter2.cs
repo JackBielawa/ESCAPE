@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -74,6 +75,8 @@ namespace IndieMarc.Platformer
         private GameObject rectangleInstance;
 
         private static Dictionary<int, PlayerCharacterTwo> character_list = new Dictionary<int, PlayerCharacterTwo>();
+
+        private bool gate;
 
         void Awake()
         {
@@ -400,9 +403,11 @@ namespace IndieMarc.Platformer
         void UpdateDragonCount()
         {
             GameState gameState = FindObjectOfType<GameState>();
-            if (gameState != null)
+            if (gameState != null && gate == false)
             {
                 gameState.dragonCount++;
+                Debug.Log("dragonCount: " + gameState.dragonCount);
+                gate = true;
             }
         }
 
