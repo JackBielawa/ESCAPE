@@ -707,8 +707,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 20, y: 100}
-  m_SizeDelta: {x: 826.7087, y: 312.3185}
+  m_AnchoredPosition: {x: 0, y: 50}
+  m_SizeDelta: {x: 631.6011, y: 238.6097}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2069846711
 MonoBehaviour:
@@ -730,10 +730,13 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "It is your job to help Blue and Red ESCAPE from the Scary Caves!\n\u2022Control
-    Blue Character (WASD)\n\u2022Control Red Character (Arrow keys)\n\u2022Hold to
-    jump higher. Blue jumps higher than Red\n\u2022Collect powerups to complete levels\n\u2022Red
-    shoots fireballs  (Space Bar)\n\u2022Blue turns into a platform (E)\n\n\n"
+  m_text: "It is your job to help Blue and Red ESCAPE from the Scary Caves!\n\u2022Use
+    WASD to control blue character \n\u2022Use Arrow Keys to control red character\n\u2022Hold
+    W and Up Arrow to jump higher but remember that blue character jumps higher than
+    red\n\u2022Collect each player's poweup to help you get past long jumps and shooting
+    the ghosts\n\u2022Red shoots fireballs at the ghosts (Space Bar)\n\u2022Blue
+    turns into a platform that red can use to get across longer and higher jumps
+    (E)\n\n\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -760,19 +763,19 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 25
-  m_fontSizeBase: 25
+  m_fontSize: 20
+  m_fontSizeBase: 20
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
-  m_lineSpacing: 50
+  m_lineSpacing: 0
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
