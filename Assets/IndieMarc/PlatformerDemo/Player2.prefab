@@ -34,7 +34,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.42, y: -3.34, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.8, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4237051928039116}
@@ -82,7 +82,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 5
   m_Sprite: {fileID: 21300000, guid: 0c85884db5b77eb4094db5c58af22cc6, type: 3}
-  m_Color: {r: 0.70550823, g: 0.8018868, b: 0.15508187, a: 1}
+  m_Color: {r: 0.25364897, g: 0.25459555, b: 0.9433962, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -167,9 +167,6 @@ MonoBehaviour:
   ground_raycast_dist: 0.2
   can_crouch: 1
   crouch_coll_percent: 0.5
-  reset_when_fall: 1
-  fall_pos_y: -5
-  fall_damage_percent: 0.25
   rectanglePrefab: {fileID: 130892, guid: 37927db1c3ea24c9e8facb1b802b983f, type: 3}
   is_dead: 0
 --- !u!114 &-5181204182174940916

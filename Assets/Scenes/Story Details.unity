@@ -730,14 +730,13 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: sdasg sgg sgd asdgadsgasd gasdg adsg asdg asgaas dgsadg sagd asdg asdg
-    asdg asd gasdg asg asd gsadg as gad asgasdg sag asdg asg asdg asdg asd gasdg
-    asg asdg asd gas gasdg asdg asdg asg dasg ads fag weth wet hwt hweh twe tjertj
-    ertj ertj ertj ertj ertj ertj ertj ertj ertj ertj ertj ertj ertjert jertj ertj
-    ertje rt jertj ertj ertje rtj tjer tjerj ertj ertj ert jertj ertj ertj ertj ertj
-    ertj ertjer tjer tjertj ertjert jertj ertjrt ert .sdasg sgg sgd asdgadsgasd gasdg
-    adsg asdg asgaas dgsadg sagd asdg asdg asdg asd gasdg asg asd gsadg as gad asgasdg
-    sag asdg asg asdg asdg asd gasdg asg asdg asd gas gasdg asdg asdg asg dasg ad
+  m_text: "It is your job to help Blue and Red ESCAPE from the Scary Caves!\n\u2022Use
+    WASD to control blue character \n\u2022Use Arrow Keys to control red character\n\u2022Hold
+    W and Up Arrow to jump higher but remember that blue character jumps higher than
+    red\n\u2022Collect each player's poweup to help you get past long jumps and shooting
+    the ghosts\n\u2022Red shoots fireballs at the ghosts (Space Bar)\n\u2022Blue
+    turns into a platform that red can use to get across longer and higher jumps
+    (E)\n\n\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -770,9 +769,9 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 512
+  m_fontStyle: 1
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
