@@ -732,8 +732,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "It is your job to help Blue and Red ESCAPE from the Scary Caves!\n\u2022Control
     Blue (WASD) \n\u2022Control Red (Arrows)\n\u2022Hold to jump. Blue jumps higher
-    than red\n\u2022Collect each player's powerup\n\u2022Red shoots fireballs (Space
-    Bar)\n\u2022Blue turns into a platform (E)\n\n\n"
+    than red\n\u2022Collect each player's powerup\n\u2022Blue turns into a platform
+    (E)\n\u2022Red shoots fireballs (Space Bar)\n\n\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
