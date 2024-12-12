@@ -171,7 +171,7 @@ namespace IndieMarc.Platformer
         private void UpdateJump()
         {
             was_grounded = is_grounded;
-
+            
             // Detect if the character is grounded
             is_grounded = DetectGrounded();
 
