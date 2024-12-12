@@ -186,12 +186,12 @@ namespace IndieMarc.Platformer
             if (rigid.velocity.y > 0.1f && !jump_hold)
             {
                 // Apply higher gravity when player releases jump early
-                rigid.gravityScale = 3f;
+                rigid.gravityScale = 1.5f;
             }
             else if (rigid.velocity.y < -0.1f)
             {
                 // Apply higher gravity when falling
-                rigid.gravityScale = 3f;
+                rigid.gravityScale = 1.5f;
             }
             else
             {

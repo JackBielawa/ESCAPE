@@ -122,7 +122,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveRange: 2
-  moveSpeed: 3
+  moveSpeed: 2
   playerCharacterOne: {fileID: 0}
   playerCharacterTwo: {fileID: 0}
   fireballImmunityDuration: 0.1
