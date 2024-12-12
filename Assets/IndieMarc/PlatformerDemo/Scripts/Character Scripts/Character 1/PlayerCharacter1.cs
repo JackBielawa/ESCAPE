@@ -225,11 +225,11 @@ namespace IndieMarc.Platformer
             // Adjust gravity for smoother jump
             if (rigid.velocity.y > 0.1f && !jump_hold)
             {
-                rigid.gravityScale = 3f;
+                rigid.gravityScale = 1.5f;
             }
             else if (rigid.velocity.y < -0.1f)
             {
-                rigid.gravityScale = 3f;
+                rigid.gravityScale = 1.5f;
             }
             else
             {
